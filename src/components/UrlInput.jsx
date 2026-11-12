@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Search, Clipboard, X, Loader2, Sparkles, Video } from 'lucide-react';
+import { Search, Clipboard, X, Loader2, Globe, Sparkles } from 'lucide-react';
+
+const SUPPORTED_PLATFORMS = [
+  { name: 'YouTube', color: 'hover:border-red-500/40 hover:text-red-400' },
+  { name: 'Instagram', color: 'hover:border-pink-500/40 hover:text-pink-400' },
+  { name: 'Snapchat', color: 'hover:border-yellow-500/40 hover:text-yellow-300' },
+  { name: 'TikTok', color: 'hover:border-cyan-500/40 hover:text-cyan-400' },
+  { name: 'Twitter / X', color: 'hover:border-sky-500/40 hover:text-sky-400' },
+  { name: 'Dailymotion', color: 'hover:border-blue-500/40 hover:text-blue-400' },
+  { name: 'Facebook', color: 'hover:border-blue-600/40 hover:text-blue-400' },
+  { name: 'Reddit', color: 'hover:border-orange-500/40 hover:text-orange-400' },
+  { name: 'Pinterest', color: 'hover:border-rose-500/40 hover:text-rose-400' },
+  { name: 'Vimeo', color: 'hover:border-teal-500/40 hover:text-teal-400' },
+  { name: '1000+ Sites', color: 'hover:border-emerald-500/40 hover:text-emerald-400' }
+];
 
 export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
   const [isFocused, setIsFocused] = useState(false);
@@ -10,7 +24,7 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
       if (text && typeof text === 'string') {
         const cleaned = text.trim();
         setUrl(cleaned);
-        if (cleaned.includes('youtube.com') || cleaned.includes('youtu.be')) {
+        if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
           onFetch(cleaned);
         }
       }
@@ -30,7 +44,8 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-3">
+      {/* Search Input Box */}
       <div
         className={`relative rounded-2xl p-1 transition-all duration-300 ${
           isFocused
@@ -39,11 +54,9 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
         }`}
       >
         <div className="relative flex items-center bg-slate-900/95 rounded-xl px-4 py-2 border border-slate-800/80">
-          {/* YouTube Icon */}
-          <div className="flex items-center justify-center mr-3 text-red-500">
-            <svg className="w-6 h-6 fill-current animate-pulse-slow" viewBox="0 0 24 24">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+          {/* Universal Globe Icon */}
+          <div className="flex items-center justify-center mr-3 text-red-500 shrink-0">
+            <Globe className="w-5 h-5 animate-pulse-slow text-red-400" />
           </div>
 
           {/* Input field */}
@@ -54,7 +67,7 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste YouTube Video, Shorts, or Playlist link..."
+            placeholder="Paste any link: Instagram, Snapchat, YouTube, TikTok, Twitter, Dailymotion..."
             className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none pr-2"
           />
 
@@ -73,7 +86,7 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
             <button
               onClick={handlePaste}
               className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/50 hover:border-slate-600 transition shadow-sm"
-              title="Paste from clipboard"
+              title="Paste link from clipboard"
             >
               <Clipboard className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden xs:inline sm:inline">Paste</span>
@@ -102,6 +115,22 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Supported Platform Badges Carousel / Row */}
+      <div className="flex flex-wrap items-center justify-center gap-1.5 px-2">
+        <span className="text-[10px] uppercase font-bold text-slate-500 mr-1 flex items-center space-x-1">
+          <Sparkles className="w-3 h-3 text-red-400" />
+          <span>Supported:</span>
+        </span>
+        {SUPPORTED_PLATFORMS.map((p) => (
+          <span
+            key={p.name}
+            className={`text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/90 text-slate-400 border border-slate-800 transition cursor-default ${p.color}`}
+          >
+            {p.name}
+          </span>
+        ))}
       </div>
     </div>
   );

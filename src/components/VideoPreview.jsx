@@ -32,7 +32,13 @@ export default function VideoPreview({ videoInfo, onOpenPlaylist, isPlaylist }) 
           <div>
             {/* Top Badges */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center space-x-1">
+              {videoInfo.platform && (
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border shadow-sm ${videoInfo.platform.badgeColor}`}>
+                  {videoInfo.platform.name}
+                </span>
+              )}
+
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
                 <Sparkles className="w-3 h-3" />
                 <span>Ready to Download</span>
               </span>

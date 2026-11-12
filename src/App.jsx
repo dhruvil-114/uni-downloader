@@ -389,7 +389,7 @@ export default function App() {
                 isLoading={isLoading}
               />
               <p className="text-[11px] text-slate-500 text-center">
-                Supports all YouTube video links, Shorts, and full Playlists in up to 4K 60fps & MP3
+                Universal Downloader: Instagram Reels, Snapchat, YouTube, TikTok, Twitter/X, Dailymotion & 1000+ sites
               </p>
             </div>
 
@@ -424,10 +424,10 @@ export default function App() {
                   <DownloadCloud className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-200">
-                  Ready to download your favorite media
+                  Ready to download from anywhere
                 </h3>
                 <p className="text-xs text-slate-400 max-w-sm">
-                  Simply copy any YouTube video or playlist link and click "Paste" above. We'll automatically fetch all 4K, 1080p, and MP3 options.
+                  Simply copy any link from Instagram, Snapchat, YouTube, TikTok, Twitter/X, Dailymotion, or Facebook and click "Paste" above.
                 </p>
               </div>
             )}

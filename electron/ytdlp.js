@@ -14,7 +14,7 @@ export function sanitizeMediaUrl(rawUrl) {
     throw new Error('A valid media URL is required');
   }
   const trimmed = rawUrl.trim();
-  // Ensure it does not start with dash to prevent CLI flag injection
+  // Reject leading dashes to prevent CLI flag injection
   if (trimmed.startsWith('-')) {
     throw new Error('Invalid URL format');
   }
@@ -31,10 +31,56 @@ export function sanitizeMediaUrl(rawUrl) {
 }
 
 /**
+ * Detect social platform or source from metadata & URL
+ */
+export function detectPlatform(info, url) {
+  const ext = (info?.extractor_key || info?.extractor || '').toLowerCase();
+  let host = '';
+  try {
+    host = new URL(url).hostname.toLowerCase();
+  } catch (e) {}
+
+  if (ext.includes('youtube') || host.includes('youtube') || host.includes('youtu.be')) {
+    return { name: 'YouTube', type: 'youtube', badgeColor: 'bg-red-500/10 text-red-400 border-red-500/20' };
+  }
+  if (ext.includes('instagram') || host.includes('instagram')) {
+    return { name: 'Instagram', type: 'instagram', badgeColor: 'bg-pink-500/10 text-pink-400 border-pink-500/20' };
+  }
+  if (ext.includes('snapchat') || host.includes('snapchat')) {
+    return { name: 'Snapchat', type: 'snapchat', badgeColor: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/20' };
+  }
+  if (ext.includes('tiktok') || host.includes('tiktok')) {
+    return { name: 'TikTok', type: 'tiktok', badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' };
+  }
+  if (ext.includes('twitter') || host.includes('twitter') || host.includes('x.com')) {
+    return { name: 'Twitter / X', type: 'twitter', badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/20' };
+  }
+  if (ext.includes('dailymotion') || host.includes('dailymotion')) {
+    return { name: 'Dailymotion', type: 'dailymotion', badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+  }
+  if (ext.includes('facebook') || host.includes('facebook') || host.includes('fb.watch')) {
+    return { name: 'Facebook', type: 'facebook', badgeColor: 'bg-blue-600/10 text-blue-400 border-blue-600/20' };
+  }
+  if (ext.includes('reddit') || host.includes('reddit')) {
+    return { name: 'Reddit', type: 'reddit', badgeColor: 'bg-orange-500/10 text-orange-400 border-orange-500/20' };
+  }
+  if (ext.includes('pinterest') || host.includes('pinterest')) {
+    return { name: 'Pinterest', type: 'pinterest', badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
+  }
+  if (ext.includes('vimeo') || host.includes('vimeo')) {
+    return { name: 'Vimeo', type: 'vimeo', badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/20' };
+  }
+  if (ext.includes('twitch') || host.includes('twitch')) {
+    return { name: 'Twitch', type: 'twitch', badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20' };
+  }
+  return { name: info?.extractor_key || 'Universal Web Video', type: 'universal', badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+}
+
+/**
  * Format raw seconds to HH:MM:SS
  */
 export function formatDuration(seconds) {
-  if (!seconds || isNaN(seconds)) return '00:00';
+  if (!seconds || isNaN(seconds)) return null;
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
@@ -48,7 +94,7 @@ export function formatDuration(seconds) {
  * Human readable file size
  */
 export function formatBytes(bytes, decimals = 1) {
-  if (!bytes || bytes === 0) return 'Unknown size';
+  if (!bytes || bytes === 0) return null;
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -57,7 +103,7 @@ export function formatBytes(bytes, decimals = 1) {
 }
 
 /**
- * Fetch detailed video metadata
+ * Fetch detailed video metadata from ANY supported platform
  */
 export async function getVideoMetadata(url) {
   const cleanUrl = sanitizeMediaUrl(url);
@@ -69,7 +115,7 @@ export async function getVideoMetadata(url) {
       '--dump-json',
       '--no-playlist',
       '--ffmpeg-location', binDir,
-      '--', // End of options flag prevents CLI argument injection
+      '--',
       cleanUrl
     ];
 
@@ -87,12 +133,13 @@ export async function getVideoMetadata(url) {
 
     proc.on('close', (code) => {
       if (code !== 0) {
-        return reject(new Error(stderrData || `yt-dlp exited with code ${code}`));
+        return reject(new Error(stderrData || `Extraction failed with code ${code}`));
       }
 
       try {
         const info = JSON.parse(stdoutData);
-        
+        const platform = detectPlatform(info, cleanUrl);
+
         // Pick best thumbnail
         let thumbnail = info.thumbnail;
         if (Array.isArray(info.thumbnails) && info.thumbnails.length > 0) {
@@ -100,65 +147,73 @@ export async function getVideoMetadata(url) {
           thumbnail = sortedThumbs[0].url || thumbnail;
         }
 
-        // Available video qualities
-        const resolutions = [
-          { label: '4K Ultra HD', height: 2160, quality: '2160p' },
-          { label: '2K Quad HD', height: 1440, quality: '1440p' },
-          { label: 'Full HD', height: 1080, quality: '1080p' },
-          { label: 'HD', height: 720, quality: '720p' },
-          { label: 'Standard', height: 480, quality: '480p' },
-          { label: 'Medium', height: 360, quality: '360p' },
-          { label: 'Low', height: 240, quality: '240p' }
+        const formats = info.formats || [];
+        const availableVideoFormats = [];
+
+        // 1. Always offer "Best Quality (Original Master)"
+        let bestSize = null;
+        if (info.filesize || info.filesize_approx) {
+          bestSize = formatBytes(info.filesize || info.filesize_approx);
+        }
+
+        availableVideoFormats.push({
+          id: 'video-best',
+          type: 'video',
+          label: 'Best Available',
+          subLabel: 'Original Quality',
+          size: bestSize,
+          formatSelector: 'bestvideo+bestaudio/best',
+          extension: 'mp4'
+        });
+
+        // 2. Standard resolution tiers (supports both horizontal & vertical videos via Math.min(width, height))
+        const standardTiers = [
+          { label: '4K Ultra HD', minDim: 2160, quality: '2160p' },
+          { label: '2K Quad HD', minDim: 1440, quality: '1440p' },
+          { label: 'Full HD', minDim: 1080, quality: '1080p' },
+          { label: 'HD', minDim: 720, quality: '720p' },
+          { label: 'Standard', minDim: 480, quality: '480p' },
+          { label: 'Medium', minDim: 360, quality: '360p' }
         ];
 
-        const availableVideoFormats = [];
-        const formats = info.formats || [];
+        for (const tier of standardTiers) {
+          // Check if any format matches dimension (horizontal height or vertical width)
+          const matching = formats.filter(f => {
+            if (f.vcodec === 'none') return false;
+            const dim = (f.width && f.height) ? Math.min(f.width, f.height) : (f.height || f.width || 0);
+            return dim >= tier.minDim - 25 && dim <= tier.minDim + 25;
+          });
 
-        for (const res of resolutions) {
-          const matchingFormats = formats.filter(
-            f => f.vcodec !== 'none' && (f.height === res.height || (f.height && Math.abs(f.height - res.height) <= 20))
-          );
+          if (matching.length > 0) {
+            const has60fps = matching.some(f => (f.fps || 0) >= 50);
+            const label = has60fps ? `${tier.quality} 60fps` : tier.quality;
 
-          if (matchingFormats.length > 0) {
-            const has60fps = matchingFormats.some(f => (f.fps || 0) >= 50);
-            const labelWithFps = has60fps ? `${res.quality} 60fps` : res.quality;
-
-            const sampleFormat = matchingFormats[0];
-            const estimatedBytes = sampleFormat.filesize || sampleFormat.filesize_approx;
-            const sizeStr = estimatedBytes ? formatBytes(estimatedBytes) : null;
+            const sample = matching[0];
+            const size = sample.filesize || sample.filesize_approx;
 
             availableVideoFormats.push({
-              id: `video-${res.height}`,
+              id: `video-${tier.minDim}`,
               type: 'video',
-              height: res.height,
-              label: labelWithFps,
-              subLabel: res.label,
-              size: sizeStr,
-              formatSelector: `bestvideo[height<=${res.height}]+bestaudio/best[height<=${res.height}]`,
+              height: tier.minDim,
+              label: label,
+              subLabel: tier.label,
+              size: size ? formatBytes(size) : null,
+              formatSelector: `bestvideo[height<=${tier.minDim}]+bestaudio/best[height<=${tier.minDim}]/best`,
               extension: 'mp4'
             });
           }
         }
 
-        if (availableVideoFormats.length === 0) {
-          availableVideoFormats.push({
-            id: 'video-best',
-            type: 'video',
-            label: 'Best Available',
-            subLabel: 'Auto Match',
-            formatSelector: 'bestvideo+bestaudio/best',
-            extension: 'mp4'
-          });
-        }
-
+        // 3. Audio formats (universal conversion to MP3/M4A via FFmpeg)
         const audioFormats = [
           { id: 'audio-mp3-320', type: 'audio', label: 'MP3 High Quality', quality: '320 kbps', format: 'mp3', audioQuality: '0' },
           { id: 'audio-mp3-256', type: 'audio', label: 'MP3 Very Good', quality: '256 kbps', format: 'mp3', audioQuality: '2' },
           { id: 'audio-mp3-192', type: 'audio', label: 'MP3 Good Quality', quality: '192 kbps', format: 'mp3', audioQuality: '4' },
           { id: 'audio-mp3-128', type: 'audio', label: 'MP3 Standard', quality: '128 kbps', format: 'mp3', audioQuality: '5' },
-          { id: 'audio-m4a', type: 'audio', label: 'M4A / AAC', quality: 'Original Stream', format: 'm4a', audioQuality: '0' }
+          { id: 'audio-m4a', type: 'audio', label: 'M4A / AAC', quality: 'Original Audio Stream', format: 'm4a', audioQuality: '0' }
         ];
 
+        // 4. Subtitles
         const subs = [];
         if (info.subtitles) {
           for (const [lang, list] of Object.entries(info.subtitles)) {
@@ -174,10 +229,10 @@ export async function getVideoMetadata(url) {
         }
 
         resolve({
-          id: info.id,
-          title: info.title,
+          id: info.id || String(Date.now()),
+          title: info.title || info.fulltitle || 'Video Download',
           description: info.description ? info.description.slice(0, 300) : '',
-          channel: info.uploader || info.channel || 'YouTube',
+          channel: info.uploader || info.creator || info.channel || platform.name,
           channelUrl: info.uploader_url || info.channel_url || '',
           duration: info.duration,
           durationFormatted: formatDuration(info.duration),
@@ -185,12 +240,13 @@ export async function getVideoMetadata(url) {
           viewCount: info.view_count ? info.view_count.toLocaleString() : null,
           uploadDate: info.upload_date,
           webpageUrl: info.webpage_url || cleanUrl,
+          platform: platform,
           videoFormats: availableVideoFormats,
           audioFormats: audioFormats,
           subtitles: subs
         });
       } catch (err) {
-        reject(new Error(`Failed to parse video details: ${err.message}`));
+        reject(new Error(`Failed to parse media details: ${err.message}`));
       }
     });
 
@@ -211,7 +267,7 @@ export async function getPlaylistMetadata(url) {
     const args = [
       '--flat-playlist',
       '--dump-json',
-      '--', // End of options
+      '--',
       cleanUrl
     ];
 
@@ -235,7 +291,7 @@ export async function getPlaylistMetadata(url) {
       try {
         const lines = stdoutData.trim().split('\n').filter(Boolean);
         const entries = [];
-        let playlistTitle = 'YouTube Playlist';
+        let playlistTitle = 'Playlist';
 
         for (const line of lines) {
           try {
@@ -246,7 +302,7 @@ export async function getPlaylistMetadata(url) {
               entries.push({
                 id: item.id,
                 title: item.title,
-                url: item.url || `https://www.youtube.com/watch?v=${item.id}`,
+                url: item.url || (item.id ? `https://www.youtube.com/watch?v=${item.id}` : cleanUrl),
                 duration: item.duration,
                 durationFormatted: formatDuration(item.duration),
                 uploader: item.uploader || item.channel || ''
@@ -355,7 +411,7 @@ export function startDownload(options, onProgress, onComplete, onError) {
   proc.stdout.on('data', (chunk) => {
     stdoutBuffer += chunk.toString();
     const lines = stdoutBuffer.split('\n');
-    stdoutBuffer = lines.pop() || ''; // Keep incomplete trailing fragment in buffer
+    stdoutBuffer = lines.pop() || '';
 
     for (const line of lines) {
       const trimmed = line.trim();
@@ -444,7 +500,7 @@ export function startDownload(options, onProgress, onComplete, onError) {
 }
 
 /**
- * Cancel active download safely without orphaned processes
+ * Cancel active download safely
  */
 export function cancelDownload(downloadId) {
   const proc = activeDownloads.get(downloadId);
