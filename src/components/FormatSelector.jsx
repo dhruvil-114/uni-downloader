@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Film, Music, Settings2, Folder, Download, Check, Sparkles, FileText, Image as ImageIcon } from 'lucide-react';
+import { Film, Music, Settings2, Folder, Download, Check, FileText, Image as ImageIcon } from 'lucide-react';
 
 export default function FormatSelector({
   videoInfo,
@@ -48,7 +48,6 @@ export default function FormatSelector({
         outputDir: downloadPath
       });
     } else if (activeTab === 'extras') {
-      // Allow downloading just thumbnail or subtitles
       onStartDownload({
         url: videoInfo.webpageUrl,
         title: videoInfo.title,
@@ -63,61 +62,53 @@ export default function FormatSelector({
     }
   };
 
-  const getBadgeColor = (label) => {
-    if (label.includes('2160') || label.includes('4K')) return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
-    if (label.includes('1440') || label.includes('2K')) return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
-    if (label.includes('1080')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-    if (label.includes('720')) return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-    return 'bg-slate-700/50 text-slate-400 border-slate-600/30';
-  };
-
   return (
-    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-xl flex flex-col space-y-5">
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 pb-3 gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col space-y-5">
+      {/* Segmented Tab Navigation */}
+      <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-4 gap-2">
+        <div className="bg-slate-100/80 p-1 rounded-xl flex flex-wrap items-center gap-1 border border-slate-200/50">
           <button
             onClick={() => setActiveTab('video')}
-            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'video'
-                ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Film className="w-3.5 h-3.5" />
-            <span>Video (All Qualities)</span>
-            <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300">
+            <Film className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Video Formats</span>
+            <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
               {videoInfo.videoFormats?.length || 0}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'audio'
-                ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Music className="w-3.5 h-3.5" />
+            <Music className="w-3.5 h-3.5 text-amber-600" />
             <span>Audio Only (MP3 / M4A)</span>
           </button>
 
           <button
             onClick={() => setActiveTab('extras')}
-            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'extras'
-                ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Settings2 className="w-3.5 h-3.5" />
-            <span>Extras (Subs & Thumbnails)</span>
+            <Settings2 className="w-3.5 h-3.5 text-slate-500" />
+            <span>Extras</span>
           </button>
         </div>
 
-        <div className="text-[11px] text-slate-400 font-medium hidden md:block">
-          Select format & press Download
+        <div className="text-xs text-slate-400 font-normal hidden md:block">
+          Select preferred quality & download
         </div>
       </div>
 
@@ -131,36 +122,36 @@ export default function FormatSelector({
                 <div
                   key={fmt.id}
                   onClick={() => setSelectedVideoFormat(fmt)}
-                  className={`relative cursor-pointer rounded-xl p-3.5 border transition-all duration-200 flex flex-col justify-between ${
+                  className={`relative cursor-pointer rounded-xl p-3.5 border transition-all duration-150 flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-red-500/10 border-red-500 shadow-md shadow-red-500/10 ring-1 ring-red-500/50'
-                      : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+                      ? 'bg-indigo-50/50 border-indigo-600 ring-2 ring-indigo-500/20 shadow-sm'
+                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${getBadgeColor(fmt.label)}`}>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
                       {fmt.label}
                     </span>
                     {isSelected && (
-                      <div className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-white tracking-wide">
+                    <h4 className="text-sm font-semibold text-slate-900">
                       {fmt.subLabel || fmt.label}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Container: <span className="text-slate-300 uppercase">{fmt.extension} (Audio Merged)</span>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Format: <span className="text-slate-700 font-medium uppercase">{fmt.extension} (Audio Merged)</span>
                     </p>
                   </div>
 
                   {fmt.size && (
-                    <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>Est. Size</span>
-                      <span className="font-semibold text-slate-200">{fmt.size}</span>
+                    <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                      <span>Approx. Size</span>
+                      <span className="font-medium text-slate-800">{fmt.size}</span>
                     </div>
                   )}
                 </div>
@@ -169,30 +160,30 @@ export default function FormatSelector({
           </div>
 
           {/* Optional Extras in video tab */}
-          <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-wrap items-center gap-4 text-xs">
-            <label className="flex items-center space-x-2 cursor-pointer text-slate-300 hover:text-white">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-4 text-xs">
+            <label className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-900">
               <input
                 type="checkbox"
                 checked={downloadSubtitles}
                 onChange={(e) => setDownloadSubtitles(e.target.checked)}
-                className="rounded bg-slate-800 border-slate-700 text-red-600 focus:ring-0 w-4 h-4"
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
               />
-              <span className="flex items-center space-x-1">
+              <span className="flex items-center space-x-1 font-medium">
                 <FileText className="w-3.5 h-3.5 text-slate-400" />
                 <span>Include Subtitles (.srt)</span>
               </span>
             </label>
 
-            <label className="flex items-center space-x-2 cursor-pointer text-slate-300 hover:text-white">
+            <label className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-900">
               <input
                 type="checkbox"
                 checked={downloadThumbnail}
                 onChange={(e) => setDownloadThumbnail(e.target.checked)}
-                className="rounded bg-slate-800 border-slate-700 text-red-600 focus:ring-0 w-4 h-4"
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
               />
-              <span className="flex items-center space-x-1">
+              <span className="flex items-center space-x-1 font-medium">
                 <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
-                <span>Save HD Thumbnail (.png)</span>
+                <span>Save HD Cover Thumbnail</span>
               </span>
             </label>
           </div>
@@ -209,52 +200,52 @@ export default function FormatSelector({
                 <div
                   key={fmt.id}
                   onClick={() => setSelectedAudioFormat(fmt)}
-                  className={`relative cursor-pointer rounded-xl p-3.5 border transition-all duration-200 flex flex-col justify-between ${
+                  className={`relative cursor-pointer rounded-xl p-3.5 border transition-all duration-150 flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-red-500/10 border-red-500 shadow-md shadow-red-500/10 ring-1 ring-red-500/50'
-                      : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+                      ? 'bg-amber-50/50 border-amber-600 ring-2 ring-amber-500/20 shadow-sm'
+                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/30">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
                       {fmt.format.toUpperCase()}
                     </span>
                     {isSelected && (
-                      <div className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-full bg-amber-600 text-white flex items-center justify-center">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-white tracking-wide">
+                    <h4 className="text-sm font-semibold text-slate-900">
                       {fmt.label}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Quality: <span className="text-slate-300 font-semibold">{fmt.quality}</span>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Bitrate: <span className="text-slate-800 font-medium">{fmt.quality}</span>
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                     <span>Codec</span>
-                    <span className="font-semibold text-slate-200">{fmt.format === 'mp3' ? 'LAME MP3' : 'AAC'}</span>
+                    <span className="font-medium text-slate-800">{fmt.format === 'mp3' ? 'LAME MP3' : 'AAC'}</span>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center gap-4 text-xs">
-            <label className="flex items-center space-x-2 cursor-pointer text-slate-300 hover:text-white">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-4 text-xs">
+            <label className="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-900">
               <input
                 type="checkbox"
                 checked={downloadThumbnail}
                 onChange={(e) => setDownloadThumbnail(e.target.checked)}
-                className="rounded bg-slate-800 border-slate-700 text-red-600 focus:ring-0 w-4 h-4"
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
               />
-              <span className="flex items-center space-x-1">
+              <span className="flex items-center space-x-1 font-medium">
                 <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
-                <span>Save Album Artwork / Thumbnail</span>
+                <span>Save Cover Artwork Image</span>
               </span>
             </label>
           </div>
@@ -263,17 +254,17 @@ export default function FormatSelector({
 
       {/* Tab 3: Extras */}
       {activeTab === 'extras' && (
-        <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-white flex items-center space-x-2">
-                <FileText className="w-4 h-4 text-red-400" />
-                <span>Subtitles / Closed Captions (.srt)</span>
+              <h4 className="text-sm font-semibold text-slate-900 flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-indigo-600" />
+                <span>Subtitles (.srt / .vtt)</span>
               </h4>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {videoInfo.subtitles?.length > 0
-                  ? `${videoInfo.subtitles.length} language tracks found for this video.`
-                  : 'Auto-detect and download available subtitles.'}
+                  ? `${videoInfo.subtitles.length} language subtitle tracks available for this video.`
+                  : 'Auto-detect and download available captions.'}
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -283,18 +274,18 @@ export default function FormatSelector({
                 onChange={(e) => setDownloadSubtitles(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-white flex items-center space-x-2">
-                <ImageIcon className="w-4 h-4 text-amber-400" />
+              <h4 className="text-sm font-semibold text-slate-900 flex items-center space-x-2">
+                <ImageIcon className="w-4 h-4 text-indigo-600" />
                 <span>High Resolution Thumbnail (.png)</span>
               </h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Saves maximum resolution thumbnail image directly to download folder.
+              <p className="text-xs text-slate-500 mt-0.5">
+                Saves highest resolution cover image directly to your download folder.
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -304,26 +295,26 @@ export default function FormatSelector({
                 onChange={(e) => setDownloadThumbnail(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
           </div>
         </div>
       )}
 
       {/* Destination Folder & Primary Download Trigger */}
-      <div className="pt-4 border-t border-slate-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="pt-4 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Output path display and change button */}
-        <div className="flex-1 min-w-0 flex items-center space-x-2 bg-slate-900/80 px-3 py-2.5 rounded-xl border border-slate-800">
+        <div className="flex-1 min-w-0 flex items-center space-x-2.5 bg-slate-50 px-3.5 py-2.5 rounded-xl border border-slate-200">
           <Folder className="w-4 h-4 text-slate-400 shrink-0" />
           <div className="min-w-0 flex-1 text-left">
-            <p className="text-[10px] text-slate-500 uppercase font-semibold">Save Directory</p>
-            <p className="text-xs text-slate-300 truncate" title={downloadPath}>
+            <p className="text-[10px] text-slate-400 uppercase font-semibold">Save Directory</p>
+            <p className="text-xs text-slate-700 truncate font-medium" title={downloadPath}>
               {downloadPath || 'Default Downloads folder'}
             </p>
           </div>
           <button
             onClick={onSelectDownloadPath}
-            className="text-[11px] font-semibold text-red-400 hover:text-red-300 ml-2 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700/80 transition shrink-0"
+            className="text-xs font-semibold text-slate-700 hover:text-indigo-600 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-slate-300 shadow-sm transition shrink-0"
           >
             Change
           </button>
@@ -333,10 +324,10 @@ export default function FormatSelector({
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className={`w-full md:w-auto shrink-0 flex items-center justify-center space-x-2 px-7 py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 shadow-xl ${
+          className={`w-full md:w-auto shrink-0 flex items-center justify-center space-x-2 px-8 py-3 rounded-xl font-semibold text-sm tracking-normal transition-all shadow-sm ${
             isDownloading
-              ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
-              : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white hover:from-red-500 hover:to-rose-500 shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]'
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20 hover:shadow active:scale-[0.99]'
           }`}
         >
           <Download className="w-4 h-4" />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckSquare, Square, Download, Music, Film, Search, ListMusic, Check } from 'lucide-react';
+import { X, CheckSquare, Square, Download, Search, ListMusic } from 'lucide-react';
 
 export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePlaylist, downloadPath }) {
   if (!isOpen || !playlistData) return null;
@@ -53,54 +53,54 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center">
               <ListMusic className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white truncate max-w-md">
+              <h3 className="text-sm font-semibold text-slate-900 truncate max-w-md">
                 {playlistData.title}
               </h3>
-              <p className="text-xs text-slate-400">
-                {playlistData.count} videos found • {selectedIds.size} selected
+              <p className="text-xs text-slate-500">
+                {playlistData.count} items • {selectedIds.size} selected
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Options & Batch Controls */}
-        <div className="p-4 bg-slate-900/40 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="p-3.5 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Format Selection */}
           <div className="flex items-center space-x-3">
-            <span className="text-slate-400 font-semibold uppercase text-[10px]">Download As:</span>
-            <div className="flex items-center space-x-1 bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60">
+            <span className="text-slate-500 font-medium">Format:</span>
+            <div className="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
               <button
                 onClick={() => setDownloadType('video')}
-                className={`px-3 py-1 rounded-md font-semibold transition ${
+                className={`px-3 py-1 rounded-md font-medium transition ${
                   downloadType === 'video'
-                    ? 'bg-red-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Video (MP4)
               </button>
               <button
                 onClick={() => setDownloadType('audio')}
-                className={`px-3 py-1 rounded-md font-semibold transition ${
+                className={`px-3 py-1 rounded-md font-medium transition ${
                   downloadType === 'audio'
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Audio (MP3)
@@ -112,7 +112,7 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
               <select
                 value={videoQuality}
                 onChange={(e) => setVideoQuality(e.target.value)}
-                className="bg-slate-800 text-white rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none"
+                className="bg-white text-slate-800 rounded-lg px-2.5 py-1 border border-slate-200 focus:outline-none focus:border-indigo-500"
               >
                 <option value="2160">4K (2160p)</option>
                 <option value="1080">1080p Full HD</option>
@@ -123,7 +123,7 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
               <select
                 value={audioQuality}
                 onChange={(e) => setAudioQuality(e.target.value)}
-                className="bg-slate-800 text-white rounded-lg px-2.5 py-1 border border-slate-700 focus:outline-none"
+                className="bg-white text-slate-800 rounded-lg px-2.5 py-1 border border-slate-200 focus:outline-none focus:border-indigo-500"
               >
                 <option value="320">320 kbps (High)</option>
                 <option value="192">192 kbps (Medium)</option>
@@ -134,36 +134,36 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
 
           {/* Search / filter in playlist */}
           <div className="relative flex-1 max-w-xs">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search in playlist..."
+              placeholder="Filter items..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full bg-slate-950 text-white placeholder-slate-500 rounded-lg pl-8 pr-3 py-1 text-xs border border-slate-800 focus:outline-none focus:border-red-500"
+              className="w-full bg-slate-50 text-slate-900 placeholder-slate-400 rounded-lg pl-8 pr-3 py-1 text-xs border border-slate-200 focus:outline-none focus:border-indigo-500"
             />
           </div>
         </div>
 
         {/* Action bar for select all */}
-        <div className="px-4 py-2 bg-slate-950/40 border-b border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
           <button
             onClick={toggleSelectAll}
-            className="flex items-center space-x-1.5 hover:text-white transition font-medium"
+            className="flex items-center space-x-1.5 hover:text-slate-800 transition font-medium"
           >
             {selectedIds.size === playlistData.entries.length ? (
-              <CheckSquare className="w-4 h-4 text-red-500" />
+              <CheckSquare className="w-4 h-4 text-indigo-600" />
             ) : (
-              <Square className="w-4 h-4 text-slate-500" />
+              <Square className="w-4 h-4 text-slate-400" />
             )}
             <span>Select All ({playlistData.entries.length})</span>
           </button>
 
-          <span>Showing {filteredEntries.length} videos</span>
+          <span>Showing {filteredEntries.length} items</span>
         </div>
 
         {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {filteredEntries.map((entry, index) => {
             const isChecked = selectedIds.has(entry.id);
             return (
@@ -172,20 +172,20 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
                 onClick={() => toggleItem(entry.id)}
                 className={`flex items-center space-x-3 p-2.5 rounded-xl border cursor-pointer transition ${
                   isChecked
-                    ? 'bg-slate-800/80 border-slate-700 text-white'
-                    : 'bg-slate-950/40 border-slate-800/60 text-slate-400 hover:bg-slate-800/30'
+                    ? 'bg-indigo-50/40 border-indigo-200 text-slate-900'
+                    : 'bg-white border-slate-200/80 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <div className="shrink-0 text-red-500">
-                  {isChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-slate-600" />}
+                <div className="shrink-0 text-indigo-600">
+                  {isChecked ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-slate-400" />}
                 </div>
 
-                <span className="text-xs text-slate-500 font-mono w-6 text-right">
+                <span className="text-xs text-slate-400 font-mono w-5 text-right">
                   {index + 1}.
                 </span>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate text-slate-200">
+                  <p className="text-xs font-medium truncate text-slate-800">
                     {entry.title}
                   </p>
                 </div>
@@ -201,15 +201,15 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
-          <span className="text-xs text-slate-400">
-            {selectedIds.size} of {playlistData.entries.length} items will be queued
+        <div className="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+          <span className="text-xs text-slate-500">
+            {selectedIds.size} of {playlistData.entries.length} items queued
           </span>
 
           <div className="flex items-center space-x-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition"
             >
               Cancel
             </button>
@@ -217,13 +217,13 @@ export default function PlaylistModal({ playlistData, isOpen, onClose, onQueuePl
             <button
               onClick={handleStartBatch}
               disabled={selectedIds.size === 0}
-              className={`flex items-center space-x-2 px-6 py-2 rounded-xl text-xs font-bold transition shadow-lg ${
+              className={`flex items-center space-x-1.5 px-5 py-2 rounded-xl text-xs font-semibold transition shadow-sm ${
                 selectedIds.size === 0
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-500 hover:to-rose-500 shadow-red-600/30'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
               }`}
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5" />
               <span>Download Selected ({selectedIds.size})</span>
             </button>
           </div>

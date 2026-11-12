@@ -12,29 +12,31 @@
   }
 
   body {
-    @apply bg-slate-950 text-slate-100 font-sans selection:bg-red-500 selection:text-white;
+    @apply bg-slate-50 text-slate-800 font-sans selection:bg-indigo-500 selection:text-white;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Custom modern scrollbar */
+/* Crisp modern light scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(148, 163, 184, 0.5);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 1);
+  background: rgba(100, 116, 139, 0.8);
 }
 
 /* Draggable window region for titlebar */
@@ -44,20 +46,4 @@
 
 .app-no-drag {
   -webkit-app-region: no-drag;
-}
-
-/* Shimmer animation */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.03) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
 }

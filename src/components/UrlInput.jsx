@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { Search, Clipboard, X, Loader2, Globe, Sparkles } from 'lucide-react';
+import { Search, Clipboard, X, Loader2, Link2 } from 'lucide-react';
 
 const SUPPORTED_PLATFORMS = [
-  { name: 'YouTube', color: 'hover:border-red-500/40 hover:text-red-400' },
-  { name: 'Instagram', color: 'hover:border-pink-500/40 hover:text-pink-400' },
-  { name: 'Snapchat', color: 'hover:border-yellow-500/40 hover:text-yellow-300' },
-  { name: 'TikTok', color: 'hover:border-cyan-500/40 hover:text-cyan-400' },
-  { name: 'Twitter / X', color: 'hover:border-sky-500/40 hover:text-sky-400' },
-  { name: 'Dailymotion', color: 'hover:border-blue-500/40 hover:text-blue-400' },
-  { name: 'Facebook', color: 'hover:border-blue-600/40 hover:text-blue-400' },
-  { name: 'Reddit', color: 'hover:border-orange-500/40 hover:text-orange-400' },
-  { name: 'Pinterest', color: 'hover:border-rose-500/40 hover:text-rose-400' },
-  { name: 'Vimeo', color: 'hover:border-teal-500/40 hover:text-teal-400' },
-  { name: '1000+ Sites', color: 'hover:border-emerald-500/40 hover:text-emerald-400' }
+  'YouTube',
+  'Instagram',
+  'Snapchat',
+  'TikTok',
+  'Twitter / X',
+  'Dailymotion',
+  'Facebook',
+  'Reddit',
+  'Pinterest',
+  'Vimeo',
+  '1000+ Sites'
 ];
 
 export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
@@ -47,16 +47,16 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
     <div className="w-full space-y-3">
       {/* Search Input Box */}
       <div
-        className={`relative rounded-2xl p-1 transition-all duration-300 ${
+        className={`bg-white rounded-2xl p-1.5 border transition-all duration-200 shadow-sm ${
           isFocused
-            ? 'bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 shadow-xl shadow-red-500/10'
-            : 'bg-slate-800/80 hover:bg-slate-800'
+            ? 'border-indigo-600 ring-4 ring-indigo-500/10 shadow-md'
+            : 'border-slate-200/90 hover:border-slate-300'
         }`}
       >
-        <div className="relative flex items-center bg-slate-900/95 rounded-xl px-4 py-2 border border-slate-800/80">
-          {/* Universal Globe Icon */}
-          <div className="flex items-center justify-center mr-3 text-red-500 shrink-0">
-            <Globe className="w-5 h-5 animate-pulse-slow text-red-400" />
+        <div className="flex items-center px-3 py-1.5">
+          {/* Link Icon */}
+          <div className="flex items-center justify-center mr-3 text-slate-400 shrink-0">
+            <Link2 className="w-5 h-5 text-indigo-500" />
           </div>
 
           {/* Input field */}
@@ -67,16 +67,16 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste any link: Instagram, Snapchat, YouTube, TikTok, Twitter, Dailymotion..."
-            className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none pr-2"
+            placeholder="Paste link here: Instagram, Snapchat, YouTube, TikTok, Twitter, Dailymotion..."
+            className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-none pr-2 font-normal"
           />
 
           {/* Right Action buttons */}
-          <div className="flex items-center space-x-1.5 shrink-0">
+          <div className="flex items-center space-x-2 shrink-0">
             {url && (
               <button
                 onClick={handleClear}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
                 title="Clear input"
               >
                 <X className="w-4 h-4" />
@@ -85,31 +85,31 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
 
             <button
               onClick={handlePaste}
-              className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/50 hover:border-slate-600 transition shadow-sm"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/60 transition"
               title="Paste link from clipboard"
             >
-              <Clipboard className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden xs:inline sm:inline">Paste</span>
+              <Clipboard className="w-3.5 h-3.5 text-slate-500" />
+              <span>Paste</span>
             </button>
 
             <button
               onClick={() => onFetch(url.trim())}
               disabled={!url.trim() || isLoading}
-              className={`flex items-center space-x-1.5 px-3.5 sm:px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-md ${
+              className={`flex items-center space-x-2 px-5 py-2 rounded-xl text-xs font-medium transition-all shadow-sm ${
                 !url.trim() || isLoading
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/40'
-                  : 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-500 hover:to-rose-500 shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]'
               }`}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span className="hidden sm:inline">Analyzing...</span>
+                  <span>Fetching...</span>
                 </>
               ) : (
                 <>
-                  <Search className="w-4 h-4" />
-                  <span>Fetch</span>
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Analyze</span>
                 </>
               )}
             </button>
@@ -117,18 +117,17 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
         </div>
       </div>
 
-      {/* Supported Platform Badges Carousel / Row */}
+      {/* Supported Platform Badges */}
       <div className="flex flex-wrap items-center justify-center gap-1.5 px-2">
-        <span className="text-[10px] uppercase font-bold text-slate-500 mr-1 flex items-center space-x-1">
-          <Sparkles className="w-3 h-3 text-red-400" />
-          <span>Supported:</span>
+        <span className="text-[11px] font-medium text-slate-400 mr-1">
+          Supports:
         </span>
-        {SUPPORTED_PLATFORMS.map((p) => (
+        {SUPPORTED_PLATFORMS.map((name) => (
           <span
-            key={p.name}
-            className={`text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/90 text-slate-400 border border-slate-800 transition cursor-default ${p.color}`}
+            key={name}
+            className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
           >
-            {p.name}
+            {name}
           </span>
         ))}
       </div>

@@ -320,7 +320,7 @@ export default function App() {
   ).length;
 
   return (
-    <div className="h-full w-full bg-slate-950 text-slate-100 flex flex-col font-sans select-none overflow-hidden">
+    <div className="h-full w-full bg-slate-50 text-slate-800 flex flex-col font-sans select-none overflow-hidden">
       {/* Frameless Titlebar */}
       <TitleBar
         binaryStatus={binaryStatus}
@@ -331,45 +331,45 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-8 py-4 sm:py-6 max-w-5xl mx-auto w-full flex flex-col space-y-5">
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+          <div className="bg-slate-200/70 p-1 rounded-xl flex items-center space-x-1">
             <button
               onClick={() => setViewTab('new')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+              className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs transition-all ${
                 viewTab === 'new'
-                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  ? 'bg-white text-slate-900 font-semibold shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 font-medium'
               }`}
             >
-              <DownloadCloud className="w-4 h-4" />
+              <DownloadCloud className="w-4 h-4 text-indigo-600" />
               <span>New Download</span>
             </button>
 
             <button
               onClick={() => setViewTab('queue')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition relative ${
+              className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs transition-all relative ${
                 viewTab === 'queue'
-                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  ? 'bg-white text-slate-900 font-semibold shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 font-medium'
               }`}
             >
-              <ListOrdered className="w-4 h-4" />
+              <ListOrdered className="w-4 h-4 text-indigo-600" />
               <span>Downloads Queue</span>
               {downloads.length > 0 && (
-                <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-white font-mono">
+                <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
                   {downloads.length}
                 </span>
               )}
               {activeCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
               )}
             </button>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs text-slate-400">
+          <div className="flex items-center space-x-2 text-xs">
             <button
               onClick={() => window.electronAPI?.openFolder(downloadPath)}
-              className="flex items-center space-x-1 hover:text-white transition px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800"
+              className="flex items-center space-x-1.5 text-slate-700 hover:text-slate-900 transition px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-slate-300 font-medium"
               title="Open downloads directory"
             >
               <FolderOpen className="w-3.5 h-3.5 text-slate-400" />
@@ -380,7 +380,7 @@ export default function App() {
 
         {/* View: New Download */}
         {viewTab === 'new' && (
-          <div className="flex flex-col space-y-6">
+          <div className="flex flex-col space-y-5">
             <div className="space-y-2">
               <UrlInput
                 url={url}
@@ -388,14 +388,14 @@ export default function App() {
                 onFetch={handleFetchMetadata}
                 isLoading={isLoading}
               />
-              <p className="text-[11px] text-slate-500 text-center">
-                Universal Downloader: Instagram Reels, Snapchat, YouTube, TikTok, Twitter/X, Dailymotion & 1000+ sites
+              <p className="text-xs text-slate-400 text-center">
+                Download videos, reels, stories & audio from Instagram, Snapchat, YouTube, TikTok, Twitter/X & 1000+ sites
               </p>
             </div>
 
             {error && (
-              <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/80 text-red-300 text-xs flex items-center space-x-2.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2.5 shadow-sm">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
                 <span>{error}</span>
               </div>
             )}
@@ -419,14 +419,14 @@ export default function App() {
             )}
 
             {!videoInfo && !isLoading && (
-              <div className="flex flex-col items-center justify-center p-12 rounded-2xl border border-dashed border-slate-800/80 bg-slate-900/20 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 border border-slate-700/60 flex items-center justify-center text-red-500 shadow-md">
+              <div className="flex flex-col items-center justify-center p-10 sm:p-14 rounded-2xl border border-dashed border-slate-200 bg-white/60 text-center space-y-3 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
                   <DownloadCloud className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-200">
+                <h3 className="text-sm font-semibold text-slate-800">
                   Ready to download from anywhere
                 </h3>
-                <p className="text-xs text-slate-400 max-w-sm">
+                <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
                   Simply copy any link from Instagram, Snapchat, YouTube, TikTok, Twitter/X, Dailymotion, or Facebook and click "Paste" above.
                 </p>
               </div>
@@ -439,18 +439,18 @@ export default function App() {
           <div className="flex flex-col space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-white">Active & Completed Tasks</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-sm font-semibold text-slate-900">Active & Completed Tasks</h3>
+                <p className="text-xs text-slate-500">
                   {downloads.length === 0
                     ? 'No downloads in progress'
-                    : `${downloads.length} tasks recorded (${activeCount} active)`}
+                    : `${downloads.length} tasks (${activeCount} active)`}
                 </p>
               </div>
 
               {downloads.length > 0 && (
                 <button
                   onClick={() => setDownloads([])}
-                  className="text-xs text-slate-400 hover:text-rose-400 transition"
+                  className="text-xs text-slate-500 hover:text-rose-600 font-medium transition"
                 >
                   Clear All
                 </button>
@@ -458,11 +458,11 @@ export default function App() {
             </div>
 
             {downloads.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/20 space-y-2">
-                <p className="text-xs text-slate-400">No active or past downloads yet.</p>
+              <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 bg-white space-y-2.5 shadow-sm">
+                <p className="text-xs text-slate-500">No active or past downloads yet.</p>
                 <button
                   onClick={() => setViewTab('new')}
-                  className="text-xs text-red-400 font-bold hover:underline inline-flex items-center space-x-1"
+                  className="text-xs text-indigo-600 font-semibold hover:text-indigo-700 inline-flex items-center space-x-1"
                 >
                   <span>Start your first download</span>
                   <ArrowRight className="w-3.5 h-3.5" />

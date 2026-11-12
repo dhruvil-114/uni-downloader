@@ -24,7 +24,7 @@ function createWindow() {
     minWidth: 700,
     minHeight: 520,
     frame: false, // Custom sleek titlebar
-    backgroundColor: '#020617', // slate-950
+    backgroundColor: '#F8FAFC', // slate-50 light background
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
