@@ -17,9 +17,9 @@ export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings 
   const allEnginesReady = binaryStatus?.ytDlp?.available && binaryStatus?.ffmpeg?.available;
 
   return (
-    <div className="h-10 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-3 select-none app-drag-region sticky top-0 z-50">
+    <div className="h-10 shrink-0 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-3 select-none app-drag-region sticky top-0 z-50">
       {/* App branding */}
-      <div className="flex items-center space-x-2.5">
+      <div className="flex items-center space-x-2.5 shrink-0">
         <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/20">
           <DownloadCloud className="w-3.5 h-3.5 text-white" />
         </div>
@@ -34,7 +34,7 @@ export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings 
       </div>
 
       {/* Engine Status indicator */}
-      <div className="app-no-drag flex items-center space-x-2">
+      <div className="app-no-drag flex items-center space-x-2 shrink-0">
         <button
           onClick={onOpenSettings}
           className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition"
@@ -42,20 +42,22 @@ export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings 
         >
           {allEnginesReady ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-300 text-[11px]">4K & MP3 Engines Ready</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="text-slate-300 text-[11px] hidden sm:inline">4K & MP3 Engines Ready</span>
+              <span className="text-slate-300 text-[11px] sm:hidden">Ready</span>
             </>
           ) : binaryProgress ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              <span className="text-amber-400 text-[11px]">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+              <span className="text-amber-400 text-[11px] max-w-[150px] truncate">
                 {binaryProgress.message || `Downloading ${binaryProgress.binary}...`}
               </span>
             </>
           ) : (
             <>
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              <span className="text-amber-400 text-[11px]">Checking / Setting up engines</span>
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+              <span className="text-amber-400 text-[11px] hidden sm:inline">Checking / Setting up engines</span>
+              <span className="text-amber-400 text-[11px] sm:hidden">Setting up</span>
             </>
           )}
         </button>

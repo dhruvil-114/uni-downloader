@@ -6,9 +6,9 @@ export default function VideoPreview({ videoInfo, onOpenPlaylist, isPlaylist }) 
 
   return (
     <div className="w-full bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-xl transition-all">
-      <div className="flex flex-col md:flex-row gap-5 items-start">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
         {/* Thumbnail Preview with Duration badge */}
-        <div className="relative rounded-xl overflow-hidden shrink-0 group border border-slate-800/60 shadow-lg w-full md:w-64 aspect-video bg-slate-950">
+        <div className="relative rounded-xl overflow-hidden shrink-0 group border border-slate-800/60 shadow-lg w-full sm:w-56 md:w-64 aspect-video bg-slate-950">
           <img
             src={videoInfo.thumbnail}
             alt={videoInfo.title}

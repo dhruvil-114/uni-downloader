@@ -54,12 +54,12 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             onKeyDown={handleKeyDown}
-            placeholder="Paste YouTube Video, Shorts, or Playlist URL here..."
-            className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none pr-3"
+            placeholder="Paste YouTube Video, Shorts, or Playlist link..."
+            className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none pr-2"
           />
 
           {/* Right Action buttons */}
-          <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex items-center space-x-1.5 shrink-0">
             {url && (
               <button
                 onClick={handleClear}
@@ -72,17 +72,17 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
 
             <button
               onClick={handlePaste}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/50 hover:border-slate-600 transition shadow-sm"
+              className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/50 hover:border-slate-600 transition shadow-sm"
               title="Paste from clipboard"
             >
               <Clipboard className="w-3.5 h-3.5 text-slate-400" />
-              <span>Paste</span>
+              <span className="hidden xs:inline sm:inline">Paste</span>
             </button>
 
             <button
               onClick={() => onFetch(url.trim())}
               disabled={!url.trim() || isLoading}
-              className={`flex items-center space-x-2 px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-md ${
+              className={`flex items-center space-x-1.5 px-3.5 sm:px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-md ${
                 !url.trim() || isLoading
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/40'
                   : 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-500 hover:to-rose-500 shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]'
@@ -91,12 +91,12 @@ export default function UrlInput({ url, setUrl, onFetch, isLoading }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Analyzing...</span>
+                  <span className="hidden sm:inline">Analyzing...</span>
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  <span>Fetch Info</span>
+                  <span>Fetch</span>
                 </>
               )}
             </button>

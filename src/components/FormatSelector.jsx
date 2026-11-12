@@ -72,13 +72,13 @@ export default function FormatSelector({
   };
 
   return (
-    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md shadow-xl flex flex-col space-y-5">
+    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 backdrop-blur-md shadow-xl flex flex-col space-y-5">
       {/* Tab Navigation */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 pb-3 gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('video')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'video'
                 ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -93,7 +93,7 @@ export default function FormatSelector({
 
           <button
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'audio'
                 ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -105,7 +105,7 @@ export default function FormatSelector({
 
           <button
             onClick={() => setActiveTab('extras')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'extras'
                 ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -116,7 +116,7 @@ export default function FormatSelector({
           </button>
         </div>
 
-        <div className="text-[11px] text-slate-400 font-medium hidden sm:block">
+        <div className="text-[11px] text-slate-400 font-medium hidden md:block">
           Select format & press Download
         </div>
       </div>
@@ -311,19 +311,19 @@ export default function FormatSelector({
       )}
 
       {/* Destination Folder & Primary Download Trigger */}
-      <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="pt-4 border-t border-slate-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Output path display and change button */}
-        <div className="w-full sm:w-auto flex items-center space-x-2 bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-800">
+        <div className="flex-1 min-w-0 flex items-center space-x-2 bg-slate-900/80 px-3 py-2.5 rounded-xl border border-slate-800">
           <Folder className="w-4 h-4 text-slate-400 shrink-0" />
-          <div className="min-w-0 text-left">
+          <div className="min-w-0 flex-1 text-left">
             <p className="text-[10px] text-slate-500 uppercase font-semibold">Save Directory</p>
-            <p className="text-xs text-slate-300 truncate max-w-xs sm:max-w-sm" title={downloadPath}>
+            <p className="text-xs text-slate-300 truncate" title={downloadPath}>
               {downloadPath || 'Default Downloads folder'}
             </p>
           </div>
           <button
             onClick={onSelectDownloadPath}
-            className="text-[11px] font-semibold text-red-400 hover:text-red-300 ml-2 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700/80 transition"
+            className="text-[11px] font-semibold text-red-400 hover:text-red-300 ml-2 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700/80 transition shrink-0"
           >
             Change
           </button>
@@ -333,7 +333,7 @@ export default function FormatSelector({
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-8 py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 shadow-xl ${
+          className={`w-full md:w-auto shrink-0 flex items-center justify-center space-x-2 px-7 py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 shadow-xl ${
             isDownloading
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
               : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white hover:from-red-500 hover:to-rose-500 shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]'

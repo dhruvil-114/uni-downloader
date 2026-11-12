@@ -21,8 +21,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,
     height: 760,
-    minWidth: 880,
-    minHeight: 620,
+    minWidth: 700,
+    minHeight: 520,
     frame: false, // Custom sleek titlebar
     backgroundColor: '#020617', // slate-950
     show: false,
