@@ -1,7 +1,7 @@
 {
-  "name": "youtube-media-downloader",
+  "name": "streamvault-downloader",
   "version": "1.0.0",
-  "description": "A modern, attractive desktop YouTube downloader for all video & audio qualities",
+  "description": "StreamVault - Universal Media & Video Downloader for YouTube, Instagram, TikTok, Twitter, Facebook and 1000+ platforms with full 4K and MP3 support",
   "main": "electron/main.js",
   "type": "module",
   "scripts": {
@@ -12,14 +12,18 @@
     "start": "electron ."
   },
   "keywords": [
-    "youtube",
-    "downloader",
+    "youtube-downloader",
+    "video-downloader",
+    "instagram-downloader",
+    "tiktok-downloader",
     "electron",
     "react",
     "yt-dlp",
-    "ffmpeg"
+    "ffmpeg",
+    "4k-downloader",
+    "mp3-converter"
   ],
-  "author": "",
+  "author": "Dhruvil Panchal",
   "license": "MIT",
   "dependencies": {
     "lucide-react": "^1.16.0",
