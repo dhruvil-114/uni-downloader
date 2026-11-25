@@ -1,24 +1,24 @@
 <div align="center">
 
-# 📥 StreamVault
+# ⚡ Uni Downloader
 
-### Universal Desktop Media & Video Downloader for YouTube, Instagram, TikTok & 1000+ Platforms
+### FDM / IDM-Style Universal Desktop Download Manager with 16x Turbo Acceleration, Torrents & 1000+ Video Platforms
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-2.0.0-6366F1?style=for-the-badge)](package.json)
+[![Turbo Engine](https://img.shields.io/badge/Direct_Engine-16x_aria2c-00C7B7?style=for-the-badge&logo=speedtest&logoColor=white)](https://aria2.github.io/)
+[![Video Engine](https://img.shields.io/badge/Media_Engine-yt--dlp_%2B_FFmpeg-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/yt-dlp/yt-dlp)
 [![Electron](https://img.shields.io/badge/Electron-33.2+-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6.0+-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![yt-dlp](https://img.shields.io/badge/Engine-yt--dlp-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/yt-dlp/yt-dlp)
-[![FFmpeg](https://img.shields.io/badge/Multimedia-FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 
 <p align="center">
-  <b>StreamVault</b> is an open-source, desktop application designed for fast, clean, and ad-free media downloading. Powered by <b>Electron</b>, <b>React 19</b>, <b>yt-dlp</b>, and <b>FFmpeg</b>, it delivers up to <b>4K 60fps video</b> and <b>320kbps MP3 audio</b> with live speed metrics, playlist batch processing, and security hardening.
+  <b>Uni Downloader (v2.0)</b> is a modern, high-performance desktop download manager built as an open-source, ad-free alternative to IDM and Free Download Manager. Featuring a dual-engine architecture: <b>aria2c</b> for 16-connection multi-segment direct downloads and BitTorrent/Magnets, alongside <b>yt-dlp + FFmpeg</b> for extracting up to <b>4K 60fps video</b> and <b>320kbps MP3 audio</b> from 1,000+ social and streaming platforms.
 </p>
 
 [Key Features](#-key-features) •
-[Supported Platforms](#-supported-platforms) •
-[Architecture](#-system-architecture) •
+[Dual-Engine Architecture](#-dual-engine-architecture) •
+[Supported Formats & Platforms](#-supported-platforms--formats) •
 [Quick Start](#-quick-start-windows) •
 [Security Hardening](#-security--privacy) •
 [Roadmap](#-roadmap)
@@ -29,115 +29,129 @@
 
 ## 🌟 Overview
 
-Most online video download sites are filled with deceptive ads, fake download buttons, slow transfer caps, and privacy concerns. **StreamVault** replaces fragile web downloaders with a secure, high-performance desktop application:
+Most internet downloaders fall into two broken extremes: traditional download managers like IDM/FDM that lack seamless social media video extraction, or web-based video downloaders flooded with intrusive ads, telemetry, and artificial speed throttles.
 
-- **Full Bandwidth**: Uses multi-stream downloading via `yt-dlp` and `FFmpeg` to maximize your connection speed.
-- **100% Ad-Free & Private**: Zero tracking, zero telemetry, and zero third-party cloud intermediaries.
-- **Universal Compatibility**: Works across 1,000+ social networks, video hosting sites, and media platforms.
-- **Crisp High-Contrast UI**: Clean light theme with responsive masonry controls, framed in a frameless custom titlebar.
+**Uni Downloader** unifies both worlds into a single, sleek desktop application:
 
----
-
-## 🌐 Supported Platforms
-
-StreamVault automatically detects URLs and extracts highest-quality media from:
-
-| Platform | Capabilities |
-| :--- | :--- |
-| **YouTube** | 4K/8K HDR, 60fps, Shorts, Full Playlists, Channels, 320k MP3 Audio |
-| **Instagram** | Reels, Video Posts, Stories, Carousels, Audio tracks |
-| **TikTok** | Watermark-free high-definition video downloads |
-| **Twitter / X** | Video clips, GIFs, and media threads |
-| **Snapchat** | Spotlights and public stories |
-| **Facebook** | Public reels, video posts, and watch streams |
-| **Reddit** | Video + audio streams automatically merged |
-| **Dailymotion & Vimeo** | Full HD and 4K source video streams |
-| **Twitch & Kick** | Stream clips and VODs |
-| **Pinterest & SoundCloud** | Video pins and high-bitrate audio streams |
-| **1000+ Web Platforms** | Universal extractor engine powered by yt-dlp |
+- **16x Multi-Segment Turbo Acceleration**: Splits direct files into up to 16 simultaneous chunks via `aria2c` to maximize your ISP bandwidth.
+- **BitTorrent & Magnet Link Ready**: Download torrents and magnet links natively without needing separate bloated clients.
+- **Universal Social Video Extractor**: Auto-detects and downloads videos, reels, shorts, and playlists from YouTube, Instagram, TikTok, Twitter/X, and 1,000+ sites.
+- **FDM/IDM-Style Tabular Dashboard**: Organize downloads with sidebar categories (Active, Completed, Paused, Error, Trash, Videos, Audios, Torrents), live transfer speeds, and ETA meters.
+- **100% Free & Open Source**: No popups, no subscriptions, and zero tracking.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🎥 Granular Video & Audio Quality Selection
-- **Video Resolutions**: `4K Ultra HD (2160p)`, `2K Quad HD (1440p)`, `1080p Full HD`, `720p HD`, `480p`, and `360p`.
-- **Video Containers**: MP4 (universal compatibility), MKV, and WebM.
-- **Audio Extraction**:
-  - `MP3`: 320kbps (Studio Master), 256kbps, 192kbps, and 128kbps.
-  - `M4A (AAC)`: Native Apple lossless streaming audio.
-  - `FLAC & WAV`: Uncompressed bit-for-bit lossless audio.
+### 1. 🚀 16x Multi-Connection Direct File Engine (aria2c)
+- **Multi-Segment Splitting**: Splits large files (ISOs, software installers, archives, game patches) across 16 parallel connections.
+- **Resume Capability**: Seamlessly pause and resume interrupted direct downloads without losing progress.
+- **Connection Optimization**: Configurable minimum split size and aggressive chunk fetching.
 
-### 2. 📑 Smart Playlist & Batch Downloader
-- Detects playlist URLs automatically.
-- Interactive modal with thumbnail previews, duration, channel name, and track numbers.
-- **One-Click Select All**: Queue entire albums, series, or video collections in seconds.
+### 2. 🧲 Native BitTorrent & Magnet Link Support
+- Directly paste any `magnet:?xt=...` URI or add `.torrent` files.
+- Real-time peer connections, seeders, download speed, and piece verification handled natively by `aria2c`.
 
-### 3. ⚡ Multi-Task Download Queue & Live Metrics
-- Concurrency queue manager that prevents system slowdowns by limiting active downloads.
-- Real-time updates:
-  - Exact progress percentage (`0% - 100%`)
-  - Live download speed (e.g. `14.8 MB/s`)
-  - Estimated time remaining (`ETA: 00:45`)
-  - Final merged file size
-- Interactive actions: Open completed media directly, reveal containing folder in Windows Explorer, or cancel in-progress tasks.
+### 3. 🎥 Universal Media & Video Extractor (yt-dlp + FFmpeg)
+- **Video Qualities**: `4K Ultra HD (2160p)`, `2K Quad HD (1440p)`, `1080p Full HD`, `720p HD`, `480p`, and `360p`.
+- **Audio Extraction**: `MP3 (320kbps Studio, 256kbps, 192kbps, 128kbps)`, `M4A (AAC)`, `FLAC (Lossless)`, and `WAV`.
+- **Containers**: MP4 (maximum compatibility), MKV, and WebM.
+- **Full Playlist Batch Downloader**: Paste any playlist URL to preview all items, select individual tracks or "Select All", and batch-queue with concurrency management.
 
-### 4. 🎨 Modern Desktop Experience
-- **Custom Frameless Titlebar**: Native look with smooth Minimize, Maximize, and Close actions.
-- **Quick Paste Detection**: Automatically detects YouTube, Instagram, or media links directly from the clipboard.
-- **Configurable Settings**: Choose custom default download folders and default quality preferences.
+### 4. 📊 IDM-Style Ledger & Dashboard
+- **Sidebar Organization**:
+  - Task States: `All`, `Active`, `Completed`, `Paused`, `Error`, `Trash`.
+  - Type Filters: `Video`, `Audio`, `Direct / Docs`, `Torrents`.
+  - Live Global Speed Gauge (e.g. `28.4 MB/s`).
+- **Interactive Data Table**:
+  - Live status pills (`Downloading`, `Merging`, `16x Turbo`, `Seeding`, `Completed`).
+  - Progress bar with percentage and byte counter (`1.2 GB / 2.4 GB`).
+  - Real-time speed and dynamic ETA countdown.
+  - One-click actions: Open completed media, reveal file in Windows Explorer, pause, resume, or remove.
+
+### 5. 🎨 Polished Modern Desktop UI
+- Custom frameless titlebar with Minimize, Maximize/Restore, and Close actions.
+- Real-time **Engine Status Pill** showing readiness of `yt-dlp`, `FFmpeg`, and `aria2c`.
+- Keyboard navigation and smart clipboard auto-detection.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Dual-Engine Architecture
 
 ```mermaid
 flowchart TD
-    subgraph UI["💻 Frontend (React 19 + Vite + Tailwind)"]
-        UrlInput["URL Input & Clipboard Detector"]
-        Preview["Video Preview & Format Selector"]
-        Queue["Active Download Queue & Progress Bars"]
+    subgraph UI["💻 Frontend (React 19 + Tailwind CSS)"]
+        UrlBar["Add URL Bar (Clipboard Auto-Detect)"]
+        Sidebar["Category Sidebar & Speed Gauge"]
+        Table["FDM-Style Download Table"]
+        MediaModal["Quality & Format Modal"]
         PlaylistModal["Playlist Batch Modal"]
     end
 
-    subgraph IPC["🔒 Secure IPC Layer (Electron ContextBridge)"]
+    subgraph IPC["🔒 Secure ContextBridge IPC"]
         Preload["Preload API (Strict Context Isolation)"]
     end
 
-    subgraph Main["⚡ Main Process (Electron 33 Node.js)"]
+    subgraph Main["⚡ Electron 33 Main Process"]
         Router["IPC Event Router & Window Manager"]
-        BinaryManager["Binary Verifier (yt-dlp & FFmpeg)"]
-        DownloadEngine["ytdlp.js Process Manager"]
+        BinaryManager["Engine Verifier (aria2c, yt-dlp, ffmpeg)"]
+        DirectManager["aria2.js Manager"]
+        MediaManager["ytdlp.js Manager"]
     end
 
-    subgraph Engines["🛠️ Multimedia Engines (bin/)"]
-        YTDLP["yt-dlp Binary Engine"]
-        FFMPEG["FFmpeg Audio/Video Muxer & Transcoder"]
+    subgraph Engines["🛠️ Multimedia & Turbo Engines (bin/)"]
+        ARIA2["aria2c Engine\n(16x Multi-Segment & BitTorrent)"]
+        YTDLP["yt-dlp Engine\n(1000+ Platform Media Scraper)"]
+        FFMPEG["FFmpeg Audio/Video Muxer"]
     end
 
-    UI <-->|Safe IPC Invocations| Preload
+    UrlBar -->|Input URL| Preload
     Preload <--> Main
-    Router --> BinaryManager
-    Router --> DownloadEngine
-    DownloadEngine -->|Spawn with Sanitized Args| YTDLP
-    YTDLP -->|Stream Data & Merge| FFMPEG
-    FFMPEG --> TargetDisk[("📁 Local Downloads Folder")]
+
+    Router -->|Direct Link or Magnet| DirectManager
+    Router -->|Social/Video URL| MediaManager
+
+    DirectManager -->|Spawn 16-Connection Worker| ARIA2
+    MediaManager -->|Spawn Extractor Worker| YTDLP
+    YTDLP -->|Stream & Merge| FFMPEG
+
+    ARIA2 --> TargetDisk[("📁 Local Downloads Folder")]
+    FFMPEG --> TargetDisk
 ```
+
+---
+
+## 🌐 Supported Platforms & Formats
+
+| Category | Supported Services | Details |
+| :--- | :--- | :--- |
+| **Direct Web Downloads** | HTTP, HTTPS, FTP, SFTP | Up to 16 simultaneous segmented chunk connections via `aria2c` |
+| **P2P & Torrents** | Magnet Links (`magnet:?xt=...`), `.torrent` | DHT, PEX, Local Peer Discovery, and multi-tracker support |
+| **YouTube** | Videos, Shorts, Playlists, Channels | Up to 4K/8K 60fps HDR, 320kbps MP3 audio extraction |
+| **Instagram** | Reels, Video Posts, Stories, Carousels | High-resolution video and original audio streams |
+| **TikTok** | Video posts and clips | Clean watermark-free high-definition downloads |
+| **Twitter / X** | Videos, GIFs, clips | High-bitrate video stream extraction |
+| **Snapchat** | Spotlights, public stories | MP4 video captures |
+| **Facebook & Reddit** | Public reels, watch streams, posts | Combined audio/video multiplexing |
+| **Dailymotion & Vimeo** | Full HD and 4K source videos | Native stream merging |
+| **Twitch & Kick** | Stream clips, VODs | Direct HLS and MP4 stream captures |
+| **1000+ More Platforms** | Universal scraper powered by yt-dlp | Any platform supported by yt-dlp |
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Version | Purpose |
+| Component | Technology | Version | Description |
 | :--- | :--- | :--- | :--- |
-| **Desktop Shell** | Electron | v33.2+ | Frameless native window management and secure OS integration |
-| **Frontend UI** | React | v19.0 | Fast, declarative reactive component tree |
-| **Build Tool** | Vite | v6.0 | Instant HMR development server and optimized build bundling |
-| **Styling** | Tailwind CSS | v3.4 | Clean light-mode design system with utility classes |
-| **Icons** | Lucide React | v1.16+ | Crisp, scalable SVG iconography |
-| **Download Engine** | yt-dlp | Latest | Robust video extractor and protocol handler |
-| **Media Processing**| FFmpeg & FFprobe | v6.0+ | Video/audio muxing, re-encoding, and metadata tagging |
-| **Automation** | Windows Batch Scripts | - | Automated dependency check, binary download, and build runner |
+| **Desktop Shell** | Electron | v33.2+ | Frameless native window management and OS integration |
+| **Frontend UI** | React | v19.0 | Declarative component tree with fast state rendering |
+| **Build Tool** | Vite | v6.0 | Lightning-fast development server and optimized bundler |
+| **Styling** | Tailwind CSS | v3.4 | Modern utility-first responsive design system |
+| **Icons** | Lucide React | v1.16+ | Clean, accessible SVG iconography |
+| **Turbo Engine** | aria2c | v1.37+ | 16-connection multi-segment direct and BitTorrent downloader |
+| **Media Extractor**| yt-dlp | Latest | Advanced media extractor for 1000+ web platforms |
+| **Media Processing**| FFmpeg & FFprobe | v6.0+ | Audio/video multiplexing and format conversion |
+| **Automation** | Windows Batch Scripts | - | One-click environment check, engine installer, and launcher |
 
 ---
 
@@ -150,19 +164,20 @@ setup.bat
 ```
 This automated script will:
 1. Verify that **Node.js** is installed.
-2. Verify or download **yt-dlp** standalone binary into `bin/`.
-3. Verify or fetch **FFmpeg** multimedia tools into `bin/`.
-4. Install all NPM packages.
-5. Compile the production UI build into `dist/`.
+2. Verify or auto-fetch **yt-dlp** standalone binary into `bin/`.
+3. Verify or auto-fetch **FFmpeg** multimedia tools into `bin/`.
+4. Verify or auto-download **aria2c** (16x Turbo engine) into `bin/`.
+5. Install all NPM packages.
+6. Compile the production UI build into `dist/`.
 
 ---
 
-### 2. Launch StreamVault
+### 2. Launch Uni Downloader
 Double-click `run.bat` or run:
 ```cmd
 run.bat
 ```
-The desktop application opens instantly, ready to download!
+Uni Downloader opens instantly, ready to handle direct files, torrents, or videos!
 
 ---
 
@@ -179,68 +194,69 @@ npm run electron:dev
 ## 📂 Project Structure
 
 ```text
-downloader/
-├── setup.bat                 # Automated one-click installer for dependencies & binaries
-├── run.bat                   # One-click desktop launcher (production & dev)
+uni_downloader/
+├── setup.bat                 # Automated installer for dependencies & engines
+├── run.bat                   # Desktop launcher (production & dev)
 ├── .gitignore                # Excludes node_modules, dist, downloads, and binaries
 ├── CONTRIBUTING.md           # Guidelines for open source contributors
 ├── LICENSE                   # MIT Open Source License
 ├── README.md                 # Complete documentation
-├── package.json              # Project metadata & npm dependencies
+├── package.json              # Project metadata & npm dependencies (v2.0.0)
 ├── vite.config.js            # Vite build configuration
-├── tailwind.config.js        # Tailwind design system configuration
+├── tailwind.config.js        # Tailwind styling configuration
 ├── electron/
-│   ├── main.js               # Electron main process, lifecycle & IPC handlers
+│   ├── main.js               # Electron main process, lifecycle & IPC router
 │   ├── preload.cjs           # Secure contextBridge interface
-│   ├── binaries.js           # Binaries status detector & downloader
-│   └── ytdlp.js              # yt-dlp argument builder, progress parser & process spawn
+│   ├── binaries.js           # Engine status detector & auto-downloader
+│   ├── aria2.js              # 16x multi-segment direct & torrent engine
+│   └── ytdlp.js              # yt-dlp media argument builder & stream processor
 └── src/
-    ├── main.jsx              # React application root
-    ├── App.jsx               # Master application controller & concurrency runner
-    ├── index.css             # Base stylesheet & font configurations
+    ├── main.jsx              # React root entry
+    ├── App.jsx               # Master application controller & concurrency queue
+    ├── index.css             # Base stylesheet & font styling
     └── components/
-        ├── TitleBar.jsx          # Custom sleek frameless titlebar
-        ├── UrlInput.jsx          # URL bar with clipboard auto-detection
-        ├── VideoPreview.jsx      # Thumbnail, duration, views & channel info
-        ├── FormatSelector.jsx    # Quality chips (4K, 1080p, MP3 bitrates)
-        ├── DownloadItem.jsx      # Progress bar, speed metrics & open file actions
-        ├── PlaylistModal.jsx     # Interactive playlist multi-select dialog
-        └── SettingsModal.jsx     # Download folder & concurrency preferences
+        ├── TitleBar.jsx          # Frameless titlebar with 16x Turbo status
+        ├── Sidebar.jsx           # Category navigation & total speed gauge
+        ├── AddUrlBar.jsx         # Universal URL input with clipboard auto-detect
+        ├── DownloadTable.jsx     # FDM/IDM-style tabular download ledger
+        ├── MediaModal.jsx        # Resolution & audio quality picker modal
+        ├── PlaylistModal.jsx     # Playlist batch selector modal
+        └── SettingsModal.jsx     # Engine configurations & folder preferences
 ```
 
 ---
 
 ## 🛡️ Security & Privacy
 
-StreamVault is engineered following modern Electron security best practices:
+Uni Downloader is engineered with strict adherence to modern desktop security standards:
 
-- **Chromium Sandbox Enabled**: The web renderer operates inside Chromium's restrictive sandbox (`sandbox: true`).
-- **Context Isolation**: Direct Node.js access is prohibited in the renderer (`contextIsolation: true`, `nodeIntegration: false`).
-- **Command Injection Prevention**: All input URLs are strictly sanitized before spawning child processes (rejecting leading dashes `-` and verifying valid HTTP/HTTPS schemes).
-- **Safe File Execution**: Only whitelisted safe media extensions (`.mp4`, `.m4a`, `.mp3`, `.mkv`, `.webm`) can be opened via the shell handler.
-- **Repository Cleanliness**: Large binary files (`bin/`) and user media files (`downloads/`) are excluded from Git to prevent repository bloat and ensure fast cloning.
+- **Chromium Sandbox Active**: Renderer operates within Chromium's secure process isolation (`sandbox: true`).
+- **Context Isolation Enforced**: Direct Node.js access is disabled in the web view (`contextIsolation: true`, `nodeIntegration: false`).
+- **Strict Input Sanitization**: Prevents CLI option injection by rejecting leading dashes (`-`) and validating standard URI protocols (`http:`, `https:`, `magnet:`).
+- **Whitelisted File Openings**: Shell execution is strictly constrained to recognized media and archive formats.
+- **No Cloud Intermediaries**: All downloads stream directly from origin servers or P2P swarms straight to your hard drive.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] Multi-platform support (YouTube, Instagram, TikTok, Twitter, Facebook)
-- [x] Full video qualities up to 4K 60fps & MP3 up to 320kbps
-- [x] Playlist batch downloading with individual track selection
-- [x] Concurrency download queue with speed and ETA calculations
-- [x] Custom frameless desktop UI with light theme
-- [ ] 💬 Subtitle & Closed Caption extractor (.srt, .vtt)
+- [x] 16x Multi-segment direct file acceleration (`aria2c`)
+- [x] BitTorrent and Magnet link downloading
+- [x] 1,000+ social and video platforms support (`yt-dlp` + `FFmpeg`)
+- [x] FDM/IDM-style tabular dashboard with categories & search
+- [x] Concurrency queue management with live speed & ETA metrics
+- [ ] 💬 Subtitle and closed caption downloader (.srt, .vtt)
 - [ ] 🌙 Dark Mode / High Contrast theme toggle
-- [ ] ⚡ Download speed limiter / bandwidth throttling
-- [ ] 🧩 Browser companion extension for one-click desktop downloads
-- [ ] 📦 Cross-platform packaging for Linux (.AppImage, .deb) and macOS (.dmg)
+- [ ] ⚡ Bandwidth throttling / speed limit scheduler
+- [ ] 🧩 Chrome & Firefox companion extension for one-click browser integration
+- [ ] 📦 Linux (.AppImage, .deb) and macOS (.dmg) cross-platform builds
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, bug reports, and pull requests are welcomed!  
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+Contributions, feature ideas, and pull requests are welcomed!  
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
@@ -258,5 +274,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for simple, ad-free, high-speed universal media downloading.</sub>
+  <sub>Built with ❤️ for fast, private, ad-free universal downloading.</sub>
 </div>

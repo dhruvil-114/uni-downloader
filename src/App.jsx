@@ -1,20 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import TitleBar from './components/TitleBar';
-import UrlInput from './components/UrlInput';
-import VideoPreview from './components/VideoPreview';
-import FormatSelector from './components/FormatSelector';
-import DownloadItem from './components/DownloadItem';
+import Sidebar from './components/Sidebar';
+import AddUrlBar from './components/AddUrlBar';
+import DownloadTable from './components/DownloadTable';
+import MediaModal from './components/MediaModal';
 import PlaylistModal from './components/PlaylistModal';
 import SettingsModal from './components/SettingsModal';
-import {
-  DownloadCloud,
-  ListOrdered,
-  FolderOpen,
-  ArrowRight,
-  AlertTriangle
-} from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 
-const MAX_CONCURRENT_DOWNLOADS = 2;
+function parseSpeedToMB(speedStr) {
+  if (!speedStr || typeof speedStr !== 'string') return 0;
+  const match = speedStr.match(/([\d\.]+)\s*([KMGT]?i?B)/i);
+  if (!match) return 0;
+  const val = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+  if (unit.startsWith('G')) return val * 1024;
+  if (unit.startsWith('M')) return val;
+  if (unit.startsWith('K')) return val / 1024;
+  return val / (1024 * 1024);
+}
 
 export default function App() {
   const [url, setUrl] = useState('');
@@ -28,25 +32,32 @@ export default function App() {
   const [binaryProgress, setBinaryProgress] = useState(null);
 
   const [downloads, setDownloads] = useState([]);
-  const [viewTab, setViewTab] = useState('new'); // 'new' | 'queue'
+  const [selectedId, setSelectedId] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [maxConcurrent, setMaxConcurrent] = useState(2);
+
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  // Queue references
   const pendingOptionsRef = useRef(new Map());
 
   // Concurrency Queue Runner
   useEffect(() => {
-    const activeTasks = downloads.filter(
-      (d) => d.status === 'downloading' || d.status === 'merging' || d.status === 'converting'
+    const activeTasks = downloads.filter((d) =>
+      ['downloading', 'merging', 'converting'].includes(d.status)
     );
     const queuedTasks = downloads.filter((d) => d.status === 'queued');
 
-    if (activeTasks.length < MAX_CONCURRENT_DOWNLOADS && queuedTasks.length > 0) {
-      const nextTask = queuedTasks[0];
-      const taskOptions = pendingOptionsRef.current.get(nextTask.id);
+    if (activeTasks.length < maxConcurrent && queuedTasks.length > 0) {
+      const slots = maxConcurrent - activeTasks.length;
+      const toStart = queuedTasks.slice(0, slots);
 
-      if (taskOptions && window.electronAPI) {
+      toStart.forEach((nextTask) => {
+        const taskOptions = pendingOptionsRef.current.get(nextTask.id);
+        if (!taskOptions || !window.electronAPI) return;
+
         setDownloads((prev) =>
           prev.map((item) =>
             item.id === nextTask.id
@@ -55,25 +66,29 @@ export default function App() {
           )
         );
 
-        window.electronAPI.startDownload(taskOptions).catch((err) => {
+        const runner =
+          nextTask.engine === 'aria2'
+            ? window.electronAPI.startDirectDownload(taskOptions)
+            : window.electronAPI.startDownload(taskOptions);
+
+        runner.catch((err) => {
           setDownloads((prev) =>
             prev.map((item) =>
               item.id === nextTask.id ? { ...item, status: 'error', error: err.message } : item
             )
           );
         });
-      }
+      });
     }
-  }, [downloads]);
+  }, [downloads, maxConcurrent]);
 
-  // Initialize download directory and binary checks
+  // Initialize IPC & listeners
   useEffect(() => {
     async function init() {
       try {
         if (window.electronAPI) {
           const defaultPath = await window.electronAPI.getDefaultDownloadPath();
           setDownloadPath(defaultPath);
-
           const status = await window.electronAPI.checkBinaries();
           setBinaryStatus(status);
         }
@@ -83,18 +98,20 @@ export default function App() {
     }
     init();
 
-    // Setup event listeners from Electron IPC
     if (window.electronAPI) {
       const unsubProgress = window.electronAPI.onDownloadProgress((data) => {
         setDownloads((prev) =>
           prev.map((item) => {
-            if (item.id === data.downloadId) {
+            if (item.id === data.downloadId && item.status !== 'paused' && item.status !== 'cancelled') {
               return {
                 ...item,
-                percent: data.percent,
+                percent: data.percent ?? item.percent,
+                downloadedSize: data.downloadedSize || item.downloadedSize,
                 totalSize: data.totalSize || item.totalSize,
                 speed: data.speed || item.speed,
                 eta: data.eta || item.eta,
+                connections: data.connections ?? item.connections,
+                seeders: data.seeders ?? item.seeders,
                 status: data.status || 'downloading'
               };
             }
@@ -104,7 +121,6 @@ export default function App() {
       });
 
       const unsubComplete = window.electronAPI.onDownloadComplete((data) => {
-        pendingOptionsRef.current.delete(data.downloadId);
         setDownloads((prev) =>
           prev.map((item) => {
             if (item.id === data.downloadId) {
@@ -112,6 +128,7 @@ export default function App() {
                 ...item,
                 status: 'completed',
                 percent: 100,
+                title: data.title || item.title,
                 filePath: data.filePath,
                 speed: null,
                 eta: null
@@ -123,10 +140,9 @@ export default function App() {
       });
 
       const unsubError = window.electronAPI.onDownloadError((data) => {
-        pendingOptionsRef.current.delete(data.downloadId);
         setDownloads((prev) =>
           prev.map((item) => {
-            if (item.id === data.downloadId) {
+            if (item.id === data.downloadId && item.status !== 'paused' && item.status !== 'cancelled') {
               return {
                 ...item,
                 status: 'error',
@@ -151,18 +167,66 @@ export default function App() {
     }
   }, []);
 
-  // Fetch video or playlist metadata
-  const handleFetchMetadata = async (targetUrl) => {
-    const inputUrl = targetUrl || url;
+  // Submit URL from top bar (routes to Direct 16x, Torrent/Magnet, or Social Media)
+  const handleSubmitUrl = async (targetUrl, kind = 'social') => {
+    const inputUrl = (targetUrl || url).trim();
     if (!inputUrl) return;
-
-    setIsLoading(true);
     setError(null);
+
+    // 1. Torrent / Magnet or Direct File -> Instant 16x Queue!
+    if (kind === 'torrent' || kind === 'direct') {
+      const downloadId = `dl-a2-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      let displayTitle = 'Direct Download';
+      if (kind === 'torrent') {
+        const dnMatch = inputUrl.match(/dn=([^&]+)/i);
+        displayTitle = dnMatch
+          ? decodeURIComponent(dnMatch[1].replace(/\+/g, ' '))
+          : inputUrl.split(/[\\/]/).pop() || 'Magnet Torrent';
+      } else {
+        try {
+          const p = new URL(inputUrl);
+          displayTitle = decodeURIComponent(p.pathname.split('/').pop() || 'Direct File');
+        } catch (e) {
+          displayTitle = 'Direct File';
+        }
+      }
+
+      const opts = {
+        id: downloadId,
+        url: inputUrl,
+        title: displayTitle,
+        outputDir: downloadPath,
+        connections: 16
+      };
+
+      pendingOptionsRef.current.set(downloadId, opts);
+      setDownloads((prev) => [
+        {
+          id: downloadId,
+          url: inputUrl,
+          title: displayTitle,
+          category: kind === 'torrent' ? 'torrent' : 'file',
+          engine: 'aria2',
+          qualityLabel: kind === 'torrent' ? 'BitTorrent' : 'Direct 16x',
+          status: 'queued',
+          percent: 0,
+          speed: 'Queued',
+          connections: kind === 'torrent' ? null : 16,
+          createdAt: new Date().toISOString()
+        },
+        ...prev
+      ]);
+      setSelectedId(downloadId);
+      setUrl('');
+      return;
+    }
+
+    // 2. Social Media / Video URL -> Fetch metadata & open Format Picker
+    setIsLoading(true);
     setVideoInfo(null);
     setPlaylistData(null);
 
     try {
-      // 1. Pure playlist URL check: avoid running single-video extraction if it's purely a playlist
       if (inputUrl.includes('list=') && !inputUrl.includes('watch?v=')) {
         const pData = await window.electronAPI?.fetchPlaylist(inputUrl);
         if (pData && pData.entries && pData.entries.length > 0) {
@@ -173,7 +237,6 @@ export default function App() {
         }
       }
 
-      // 2. Video with playlist or standard single video
       if (inputUrl.includes('list=')) {
         try {
           const pData = await window.electronAPI?.fetchPlaylist(inputUrl);
@@ -185,72 +248,53 @@ export default function App() {
 
       const info = await window.electronAPI?.fetchMetadata(inputUrl);
       setVideoInfo(info);
+      setIsMediaModalOpen(true);
     } catch (err) {
-      setError(err.message || 'Failed to analyze video URL. Please check the link and try again.');
+      setError(err.message || 'Could not analyze link. If this is a direct file link, switch mode to "Direct File (16x Turbo)".');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Change download destination
-  const handleSelectFolder = async () => {
-    try {
-      const selected = await window.electronAPI?.selectFolder(downloadPath);
-      if (selected) {
-        setDownloadPath(selected);
-      }
-    } catch (e) {
-      console.error(e);
+  // Open .torrent file from disk
+  const handleOpenTorrentFile = async () => {
+    const filePath = await window.electronAPI?.selectTorrentFile();
+    if (filePath) {
+      handleSubmitUrl(filePath, 'torrent');
     }
   };
 
-  // Start download for single video/audio
-  const handleStartDownload = async (options) => {
-    const downloadId = `dl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  // Start Social/Media download from MediaModal
+  const handleStartMediaDownload = (options) => {
+    const downloadId = `dl-yt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const fullOptions = { ...options, id: downloadId };
 
-    const activeTasks = downloads.filter(
-      (d) => d.status === 'downloading' || d.status === 'merging' || d.status === 'converting'
-    );
-    const shouldQueue = activeTasks.length >= MAX_CONCURRENT_DOWNLOADS;
-
-    const newDownload = {
-      id: downloadId,
-      url: options.url,
-      title: options.title,
-      thumbnail: options.thumbnail,
-      isAudio: options.isAudio,
-      qualityLabel: options.qualityLabel,
-      status: shouldQueue ? 'queued' : 'downloading',
-      percent: 0,
-      speed: shouldQueue ? 'In Queue' : 'Starting...',
-      totalSize: 'Calculating...',
-      eta: '...',
-      createdAt: new Date().toISOString()
-    };
-
     pendingOptionsRef.current.set(downloadId, fullOptions);
-    setDownloads((prev) => [newDownload, ...prev]);
-    setViewTab('queue');
-
-    if (!shouldQueue && window.electronAPI) {
-      try {
-        await window.electronAPI.startDownload(fullOptions);
-      } catch (err) {
-        setDownloads((prev) =>
-          prev.map((item) =>
-            item.id === downloadId ? { ...item, status: 'error', error: err.message } : item
-          )
-        );
-      }
-    }
+    setDownloads((prev) => [
+      {
+        id: downloadId,
+        url: options.url,
+        title: options.title,
+        thumbnail: options.thumbnail,
+        isAudio: options.isAudio,
+        category: options.isAudio ? 'audio' : 'video',
+        engine: 'ytdlp',
+        qualityLabel: options.qualityLabel,
+        status: 'queued',
+        percent: 0,
+        speed: 'Queued',
+        connections: 16,
+        createdAt: new Date().toISOString()
+      },
+      ...prev
+    ]);
+    setSelectedId(downloadId);
+    setUrl('');
   };
 
-  // Queue playlist batch with concurrency management
+  // Queue playlist batch
   const handleQueuePlaylist = (batchConfig) => {
-    setViewTab('queue');
     const newItems = [];
-
     batchConfig.items.forEach((item, index) => {
       const downloadId = `dl-pl-${Date.now()}-${index}-${Math.random().toString(36).substring(2, 5)}`;
       const itemOptions = {
@@ -263,228 +307,237 @@ export default function App() {
         audioQuality: batchConfig.audioQuality,
         outputDir: batchConfig.downloadPath
       };
-
       pendingOptionsRef.current.set(downloadId, itemOptions);
-
       newItems.push({
         id: downloadId,
         url: item.url,
         title: item.title,
-        thumbnail: null,
         isAudio: batchConfig.isAudio,
+        category: batchConfig.isAudio ? 'audio' : 'video',
+        engine: 'ytdlp',
         qualityLabel: batchConfig.qualityLabel,
         status: 'queued',
         percent: 0,
-        speed: 'In Queue',
-        totalSize: '',
-        eta: '',
+        speed: 'Queued',
+        connections: 16,
         createdAt: new Date().toISOString()
       });
     });
-
     setDownloads((prev) => [...newItems, ...prev]);
   };
 
-  // Cancel download
-  const handleCancelDownload = async (id) => {
-    pendingOptionsRef.current.delete(id);
-    await window.electronAPI?.cancelDownload(id);
+  // Pause / Resume / Cancel
+  const handlePause = async (id) => {
+    await window.electronAPI?.pauseDownload(id);
     setDownloads((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: 'cancelled' } : item))
+      prev.map((item) => (item.id === id ? { ...item, status: 'paused', speed: 'Paused' } : item))
     );
   };
 
-  // Open completed file or folder
-  const handleOpenFile = async (filePath) => {
-    await window.electronAPI?.openFile(filePath);
+  const handleResume = (id) => {
+    if (!pendingOptionsRef.current.has(id)) return;
+    setDownloads((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, status: 'queued', error: null, speed: 'Resuming...' } : item
+      )
+    );
   };
 
-  const handleOpenFolder = async (filePath) => {
-    await window.electronAPI?.openFolder(filePath);
+  const handlePauseAll = async () => {
+    const active = downloads.filter((d) =>
+      ['downloading', 'merging', 'converting', 'queued'].includes(d.status)
+    );
+    for (const item of active) {
+      await window.electronAPI?.pauseDownload(item.id);
+    }
+    setDownloads((prev) =>
+      prev.map((item) =>
+        ['downloading', 'merging', 'converting', 'queued'].includes(item.status)
+          ? { ...item, status: 'paused', speed: 'Paused' }
+          : item
+      )
+    );
   };
 
-  // Remove download item
-  const handleRemoveDownload = (id) => {
+  const handleResumeAll = () => {
+    setDownloads((prev) =>
+      prev.map((item) =>
+        item.status === 'paused' && pendingOptionsRef.current.has(item.id)
+          ? { ...item, status: 'queued', speed: 'Resuming...' }
+          : item
+      )
+    );
+  };
+
+  const handleCancel = async (id) => {
+    pendingOptionsRef.current.delete(id);
+    await window.electronAPI?.cancelDownload(id);
+    setDownloads((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: 'cancelled', speed: null } : item))
+    );
+  };
+
+  const handleRemove = (id) => {
     pendingOptionsRef.current.delete(id);
     setDownloads((prev) => prev.filter((item) => item.id !== id));
+    if (selectedId === id) setSelectedId(null);
   };
 
-  // Refresh binaries
+  const handleClearCompleted = () => {
+    setDownloads((prev) =>
+      prev.filter((item) => !['completed', 'cancelled'].includes(item.status))
+    );
+  };
+
+  const handleSelectFolder = async () => {
+    const selected = await window.electronAPI?.selectFolder(downloadPath);
+    if (selected) setDownloadPath(selected);
+  };
+
   const handleRefreshBinaries = async () => {
     const status = await window.electronAPI?.downloadMissingBinaries();
     setBinaryStatus(status);
   };
 
-  const activeCount = downloads.filter(
-    (d) => d.status === 'downloading' || d.status === 'merging' || d.status === 'converting'
-  ).length;
+  const handlePastePrompt = async () => {
+    const text = await window.electronAPI?.clipboardReadText();
+    if (text && typeof text === 'string') {
+      setUrl(text.trim());
+    }
+  };
+
+  // Filtered list for Sidebar & Search
+  const filteredDownloads = useMemo(() => {
+    return downloads.filter((item) => {
+      if (activeCategory === 'active' && !['downloading', 'merging', 'converting', 'queued'].includes(item.status)) {
+        return false;
+      }
+      if (activeCategory === 'completed' && item.status !== 'completed') return false;
+      if (activeCategory === 'video' && item.category !== 'video') return false;
+      if (activeCategory === 'audio' && item.category !== 'audio') return false;
+      if (activeCategory === 'torrent' && item.category !== 'torrent') return false;
+      if (activeCategory === 'file' && item.category !== 'file') return false;
+
+      if (searchQuery.trim()) {
+        return item.title.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return true;
+    });
+  }, [downloads, activeCategory, searchQuery]);
+
+  // Live aggregate speed in MB/s
+  const totalSpeedMB = useMemo(() => {
+    return downloads
+      .filter((d) => d.status === 'downloading')
+      .reduce((acc, d) => acc + parseSpeedToMB(d.speed), 0);
+  }, [downloads]);
+
+  const hasActive = downloads.some((d) =>
+    ['downloading', 'merging', 'converting', 'queued'].includes(d.status)
+  );
+  const hasPaused = downloads.some((d) => d.status === 'paused');
 
   return (
     <div className="h-full w-full bg-slate-50 text-slate-800 flex flex-col font-sans select-none overflow-hidden">
-      {/* Frameless Titlebar */}
+      {/* Top Custom Window Titlebar */}
       <TitleBar
         binaryStatus={binaryStatus}
         binaryProgress={binaryProgress}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-8 py-4 sm:py-6 max-w-5xl mx-auto w-full flex flex-col space-y-5">
-        {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-          <div className="bg-slate-200/70 p-1 rounded-xl flex items-center space-x-1">
-            <button
-              onClick={() => setViewTab('new')}
-              className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs transition-all ${
-                viewTab === 'new'
-                  ? 'bg-white text-slate-900 font-semibold shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 font-medium'
-              }`}
-            >
-              <DownloadCloud className="w-4 h-4 text-indigo-600" />
-              <span>New Download</span>
-            </button>
+      {/* Top FDM/IDM Action Toolbar & Quick Add Bar */}
+      <AddUrlBar
+        url={url}
+        setUrl={setUrl}
+        onSubmitUrl={handleSubmitUrl}
+        onOpenTorrentFile={handleOpenTorrentFile}
+        isLoading={isLoading}
+        onPauseAll={handlePauseAll}
+        onResumeAll={handleResumeAll}
+        onClearCompleted={handleClearCompleted}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onOpenFolder={() => window.electronAPI?.openFolder(downloadPath)}
+        hasActive={hasActive}
+        hasPaused={hasPaused}
+      />
 
-            <button
-              onClick={() => setViewTab('queue')}
-              className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs transition-all relative ${
-                viewTab === 'queue'
-                  ? 'bg-white text-slate-900 font-semibold shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 font-medium'
-              }`}
-            >
-              <ListOrdered className="w-4 h-4 text-indigo-600" />
-              <span>Downloads Queue</span>
-              {downloads.length > 0 && (
-                <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
-                  {downloads.length}
-                </span>
-              )}
-              {activeCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
-              )}
-            </button>
+      {/* Error Banner */}
+      {error && (
+        <div className="mx-4 mt-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
+            <span>{error}</span>
           </div>
-
-          <div className="flex items-center space-x-2 text-xs">
-            <button
-              onClick={() => window.electronAPI?.openFolder(downloadPath)}
-              className="flex items-center space-x-1.5 text-slate-700 hover:text-slate-900 transition px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-slate-300 font-medium"
-              title="Open downloads directory"
-            >
-              <FolderOpen className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden sm:inline">Open Downloads</span>
-            </button>
-          </div>
+          <button onClick={() => setError(null)} className="p-1 hover:bg-rose-100 rounded">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
+      )}
 
-        {/* View: New Download */}
-        {viewTab === 'new' && (
-          <div className="flex flex-col space-y-5">
-            <div className="space-y-2">
-              <UrlInput
-                url={url}
-                setUrl={setUrl}
-                onFetch={handleFetchMetadata}
-                isLoading={isLoading}
-              />
-              <p className="text-xs text-slate-400 text-center">
-                Download videos, reels, stories & audio from Instagram, Snapchat, YouTube, TikTok, Twitter/X & 1000+ sites
-              </p>
-            </div>
+      {/* Mobile/Compact Category Tabs (visible when Sidebar is hidden on narrow windows) */}
+      <div className="flex md:hidden items-center gap-1.5 px-3 py-2 bg-white border-b border-slate-200 overflow-x-auto shrink-0">
+        {[
+          { id: 'all', label: 'All' },
+          { id: 'active', label: 'Active' },
+          { id: 'completed', label: 'Done' },
+          { id: 'video', label: 'Video' },
+          { id: 'audio', label: 'Audio' },
+          { id: 'torrent', label: 'Torrents' },
+          { id: 'file', label: 'Files' }
+        ].map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
+              activeCategory === cat.id
+                ? 'bg-indigo-600 text-white'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
-            {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2.5 shadow-sm">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
-                <span>{error}</span>
-              </div>
-            )}
+      {/* Main Split FDM/IDM Workspace */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        <Sidebar
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          downloads={downloads}
+          totalSpeedMB={totalSpeedMB}
+        />
 
-            {videoInfo && (
-              <VideoPreview
-                videoInfo={videoInfo}
-                isPlaylist={Boolean(playlistData)}
-                onOpenPlaylist={() => setIsPlaylistModalOpen(true)}
-              />
-            )}
+        <DownloadTable
+          items={filteredDownloads}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onPause={handlePause}
+          onResume={handleResume}
+          onCancel={handleCancel}
+          onOpenFile={(p) => window.electronAPI?.openFile(p)}
+          onOpenFolder={(p) => window.electronAPI?.openFolder(p)}
+          onRemove={handleRemove}
+          onPastePrompt={handlePastePrompt}
+        />
+      </div>
 
-            {videoInfo && (
-              <FormatSelector
-                videoInfo={videoInfo}
-                downloadPath={downloadPath}
-                onSelectDownloadPath={handleSelectFolder}
-                onStartDownload={handleStartDownload}
-                isDownloading={isLoading}
-              />
-            )}
-
-            {!videoInfo && !isLoading && (
-              <div className="flex flex-col items-center justify-center p-10 sm:p-14 rounded-2xl border border-dashed border-slate-200 bg-white/60 text-center space-y-3 shadow-sm">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-                  <DownloadCloud className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-semibold text-slate-800">
-                  Ready to download from anywhere
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-                  Simply copy any link from Instagram, Snapchat, YouTube, TikTok, Twitter/X, Dailymotion, or Facebook and click "Paste" above.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* View: Downloads Queue & History */}
-        {viewTab === 'queue' && (
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">Active & Completed Tasks</h3>
-                <p className="text-xs text-slate-500">
-                  {downloads.length === 0
-                    ? 'No downloads in progress'
-                    : `${downloads.length} tasks (${activeCount} active)`}
-                </p>
-              </div>
-
-              {downloads.length > 0 && (
-                <button
-                  onClick={() => setDownloads([])}
-                  className="text-xs text-slate-500 hover:text-rose-600 font-medium transition"
-                >
-                  Clear All
-                </button>
-              )}
-            </div>
-
-            {downloads.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 bg-white space-y-2.5 shadow-sm">
-                <p className="text-xs text-slate-500">No active or past downloads yet.</p>
-                <button
-                  onClick={() => setViewTab('new')}
-                  className="text-xs text-indigo-600 font-semibold hover:text-indigo-700 inline-flex items-center space-x-1"
-                >
-                  <span>Start your first download</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {downloads.map((item) => (
-                  <DownloadItem
-                    key={item.id}
-                    item={item}
-                    onCancel={handleCancelDownload}
-                    onOpenFile={handleOpenFile}
-                    onOpenFolder={handleOpenFolder}
-                    onRemove={handleRemoveDownload}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+      {/* Social/Video Format Picker Modal */}
+      <MediaModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        videoInfo={videoInfo}
+        playlistData={playlistData}
+        onOpenPlaylist={() => {
+          setIsMediaModalOpen(false);
+          setIsPlaylistModalOpen(true);
+        }}
+        downloadPath={downloadPath}
+        onSelectDownloadPath={handleSelectFolder}
+        onStartDownload={handleStartMediaDownload}
+      />
 
       {/* Playlist Batch Modal */}
       <PlaylistModal
@@ -504,6 +557,8 @@ export default function App() {
         onRefreshBinaries={handleRefreshBinaries}
         downloadPath={downloadPath}
         onSelectDownloadPath={handleSelectFolder}
+        maxConcurrent={maxConcurrent}
+        setMaxConcurrent={setMaxConcurrent}
       />
     </div>
   );

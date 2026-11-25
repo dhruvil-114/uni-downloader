@@ -2,22 +2,19 @@ import React from 'react';
 import { Minus, Square, X, ArrowDownToLine, Settings } from 'lucide-react';
 
 export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings }) {
-  const handleMinimize = () => {
-    window.electronAPI?.minimizeWindow();
-  };
+  const handleMinimize = () => window.electronAPI?.minimizeWindow();
+  const handleMaximize = () => window.electronAPI?.maximizeWindow();
+  const handleClose = () => window.electronAPI?.closeWindow();
 
-  const handleMaximize = () => {
-    window.electronAPI?.maximizeWindow();
-  };
+  const allEnginesReady =
+    binaryStatus?.ytDlp?.available &&
+    binaryStatus?.ffmpeg?.available &&
+    binaryStatus?.aria2c?.available;
 
-  const handleClose = () => {
-    window.electronAPI?.closeWindow();
-  };
-
-  const allEnginesReady = binaryStatus?.ytDlp?.available && binaryStatus?.ffmpeg?.available;
+  const coreReady = binaryStatus?.ytDlp?.available && binaryStatus?.ffmpeg?.available;
 
   return (
-    <div className="h-11 shrink-0 w-full bg-white border-b border-slate-200 flex items-center justify-between px-3.5 select-none app-drag-region sticky top-0 z-50 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+    <div className="h-11 shrink-0 w-full bg-white border-b border-slate-200 flex items-center justify-between px-3.5 select-none app-drag-region sticky top-0 z-50">
       {/* App branding */}
       <div className="flex items-center space-x-2.5 shrink-0">
         <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm">
@@ -25,10 +22,10 @@ export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings 
         </div>
         <div className="flex items-center space-x-1.5">
           <span className="font-semibold text-sm tracking-tight text-slate-900">
-            StreamVault
+            Uni Downloader
           </span>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/80">
-            Downloader
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/80">
+            16x Turbo
           </span>
         </div>
       </div>
@@ -38,25 +35,35 @@ export default function TitleBar({ binaryStatus, binaryProgress, onOpenSettings 
         <button
           onClick={onOpenSettings}
           className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-50 border border-slate-200/80 hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition"
-          title="Click to view engine details & download settings"
+          title="Engine status & settings"
         >
           {allEnginesReady ? (
             <>
               <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <span className="text-slate-600 text-[11px] font-medium hidden sm:inline">Engine Ready</span>
+              <span className="text-slate-600 text-[11px] font-medium hidden sm:inline">
+                All Engines Ready (yt-dlp + FFmpeg + aria2c)
+              </span>
               <span className="text-slate-600 text-[11px] sm:hidden">Ready</span>
             </>
           ) : binaryProgress ? (
             <>
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-              <span className="text-amber-700 text-[11px] max-w-[150px] truncate">
+              <span className="text-amber-700 text-[11px] max-w-[180px] truncate">
                 {binaryProgress.message || `Downloading ${binaryProgress.binary}...`}
               </span>
+            </>
+          ) : coreReady ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+              <span className="text-slate-600 text-[11px] hidden sm:inline">
+                Setup aria2c in Settings for Torrents
+              </span>
+              <span className="text-slate-600 text-[11px] sm:hidden">Setup aria2c</span>
             </>
           ) : (
             <>
               <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-              <span className="text-slate-600 text-[11px] hidden sm:inline">Checking Engine</span>
+              <span className="text-slate-600 text-[11px] hidden sm:inline">Checking Engines</span>
               <span className="text-slate-600 text-[11px] sm:hidden">Checking</span>
             </>
           )}

@@ -1,7 +1,7 @@
 {
-  "name": "streamvault-downloader",
-  "version": "1.0.0",
-  "description": "StreamVault - Universal Media & Video Downloader for YouTube, Instagram, TikTok, Twitter, Facebook and 1000+ platforms with full 4K and MP3 support",
+  "name": "uni-downloader",
+  "version": "2.0.0",
+  "description": "Uni Downloader - FDM/IDM-style Universal Download Manager for Direct Files (16x), Torrents/Magnets, YouTube, Instagram, Snapchat, TikTok, Dailymotion & 1000+ platforms",
   "main": "electron/main.js",
   "type": "module",
   "scripts": {

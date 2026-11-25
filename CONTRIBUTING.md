@@ -1,6 +1,6 @@
-# Contributing to StreamVault Downloader 📥
+# Contributing to Uni Downloader 📥
 
-Thank you for your interest in contributing to **StreamVault**! Community contributions help make this project more versatile, stable, and fast.
+Thank you for your interest in contributing to **Uni Downloader**! Community contributions help make this project more versatile, stable, and fast.
 
 ---
 
@@ -18,8 +18,8 @@ Thank you for your interest in contributing to **StreamVault**! Community contri
 1. **Fork the Repository** on GitHub.
 2. **Clone your fork locally**:
    ```bash
-   git clone https://github.com/dhruvil-114/streamvault-downloader.git
-   cd streamvault-downloader
+   git clone https://github.com/dhruvil-114/uni-downloader.git
+   cd uni-downloader
    ```
 3. **Run Automated Windows Setup**:
    ```cmd
@@ -28,7 +28,7 @@ Thank you for your interest in contributing to **StreamVault**! Community contri
    *Or install manually:*
    ```bash
    npm install
-   # Ensure yt-dlp and ffmpeg are placed in the bin/ folder or available in PATH
+   # Ensure aria2c, yt-dlp and ffmpeg are placed in the bin/ folder or available in PATH
    npm run build
    ```
 4. **Start in Development Mode** (Hot Reloading):

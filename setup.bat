@@ -1,9 +1,9 @@
 @echo off
-title StreamVault Downloader - Setup
+title Uni Downloader - Setup
 cd /d "%~dp0"
 
 echo =======================================================
-echo          StreamVault YouTube Downloader - Setup        
+echo              Uni Downloader - Setup        
 echo =======================================================
 echo.
 
@@ -79,6 +79,28 @@ if not exist "bin\ffmpeg.exe" (
 :ffmpeg_ready
 echo [OK] FFmpeg binary is present in bin\
 
+:: 3b. Check aria2c (16x Turbo & Torrent Engine)
+echo.
+echo [*] Checking aria2c Turbo / Torrent engine...
+if exist "bin\aria2c.exe" goto :aria2_ready
+where aria2c >nul 2>&1
+if not errorlevel 1 (
+    for /f "delims=" %%a in ('where aria2c 2^>nul') do copy /y "%%a" "bin\aria2c.exe" >nul
+    goto :aria2_ready
+)
+echo [*] Downloading aria2c (16x multi-connection & torrent engine)...
+curl -L -o "bin\aria2.zip" "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip" >nul 2>&1
+if exist "bin\aria2.zip" (
+    powershell -NoProfile -Command "Expand-Archive -LiteralPath 'bin\aria2.zip' -DestinationPath 'bin\aria2-temp' -Force; $exe = Get-ChildItem -Path 'bin\aria2-temp' -Filter 'aria2c.exe' -Recurse | Select-Object -First 1; if ($exe) { Copy-Item $exe.FullName 'bin\aria2c.exe' -Force }; Remove-Item 'bin\aria2.zip' -Force; Remove-Item 'bin\aria2-temp' -Recurse -Force" >nul 2>&1
+)
+
+:aria2_ready
+if exist "bin\aria2c.exe" (
+    echo [OK] aria2c 16x Turbo & Torrent engine is ready in bin\
+) else (
+    echo [WARN] aria2c not found yet; app can auto-download it from Settings.
+)
+
 :: 4. Install NPM Dependencies
 echo.
 echo [4/5] Checking application dependencies (NPM)...
@@ -120,7 +142,7 @@ echo =======================================================
 echo          [SUCCESS] Setup Completed Successfully!       
 echo =======================================================
 echo.
-echo StreamVault is ready to use!
+echo Uni Downloader is ready to use!
 echo You can now start the app anytime by double-clicking:
 echo.
 echo     run.bat

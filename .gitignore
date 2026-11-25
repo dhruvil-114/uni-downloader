@@ -24,6 +24,8 @@ downloads/
 *.part
 *.ytdl
 *.temp
+*.torrent
+*.aria2
 
 # Logs
 logs/

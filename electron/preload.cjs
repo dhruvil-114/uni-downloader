@@ -10,10 +10,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkBinaries: () => ipcRenderer.invoke('binaries-check'),
   downloadMissingBinaries: () => ipcRenderer.invoke('binaries-download-missing'),
 
-  // YouTube operations
+  // Link classification & torrent picker
+  detectLinkType: (url) => ipcRenderer.invoke('detect-link-type', url),
+  selectTorrentFile: () => ipcRenderer.invoke('dialog-select-torrent'),
+
+  // Media & Direct/Torrent operations
   fetchMetadata: (url) => ipcRenderer.invoke('yt-fetch-metadata', url),
   fetchPlaylist: (url) => ipcRenderer.invoke('yt-fetch-playlist', url),
   startDownload: (options) => ipcRenderer.invoke('yt-start-download', options),
+  startDirectDownload: (options) => ipcRenderer.invoke('aria2-start-download', options),
+  pauseDownload: (downloadId) => ipcRenderer.invoke('download-pause', downloadId),
   cancelDownload: (downloadId) => ipcRenderer.invoke('yt-cancel-download', downloadId),
 
   // File system & shell

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, AlertCircle, RefreshCw, Folder, Cpu, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, RefreshCw, Folder, Cpu, ShieldCheck, Zap } from 'lucide-react';
 
 export default function SettingsModal({
   isOpen,
@@ -8,7 +8,9 @@ export default function SettingsModal({
   binaryProgress,
   onRefreshBinaries,
   downloadPath,
-  onSelectDownloadPath
+  onSelectDownloadPath,
+  maxConcurrent,
+  setMaxConcurrent
 }) {
   if (!isOpen) return null;
 
@@ -25,12 +27,12 @@ export default function SettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center space-x-2.5">
             <Cpu className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-sm font-semibold text-slate-900">Application Settings</h3>
+            <h3 className="text-sm font-semibold text-slate-900">Uni Downloader Settings</h3>
           </div>
           <button
             onClick={onClose}
@@ -41,78 +43,99 @@ export default function SettingsModal({
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-5 text-xs">
+        <div className="p-5 space-y-5 text-xs overflow-y-auto">
           {/* Engine Status Card */}
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-slate-700 uppercase tracking-wider text-[11px]">
-                Underlying Engines
+                Download Engines
               </span>
               <button
                 onClick={handleUpdate}
                 disabled={isUpdating}
-                className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-700 transition text-[11px] font-medium"
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition text-[11px] font-semibold"
               >
                 <RefreshCw className={`w-3 h-3 ${isUpdating ? 'animate-spin' : ''}`} />
-                <span>Check Status</span>
+                <span>{isUpdating ? 'Installing Missing...' : 'Verify / Install Missing'}</span>
               </button>
             </div>
 
-            {/* yt-dlp item */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            {binaryProgress && isUpdating && (
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium">
+                {binaryProgress.message}
+              </div>
+            )}
+
+            {/* aria2c item */}
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-slate-900">yt-dlp Core Downloader</p>
+                <p className="font-semibold text-slate-900 flex items-center space-x-1.5">
+                  <Zap className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>aria2c Turbo Engine (16x Direct & Torrents)</span>
+                </p>
+                <p className="text-slate-500 text-[11px] mt-0.5">
+                  {binaryStatus?.aria2c?.available
+                    ? binaryStatus.aria2c.version || 'Installed & Ready'
+                    : 'Not installed yet — click Verify / Install Missing'}
+                </p>
+              </div>
+              <StatusBadge available={binaryStatus?.aria2c?.available} />
+            </div>
+
+            {/* yt-dlp item */}
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-slate-900">yt-dlp Social & Video Extractor (16x Fragments)</p>
                 <p className="text-slate-500 text-[11px] mt-0.5">
                   {binaryStatus?.ytDlp?.available
                     ? `Installed: ${binaryStatus.ytDlp.version || 'Ready'}`
-                    : 'Setting up...'}
+                    : 'Not installed yet'}
                 </p>
               </div>
-              <div>
-                {binaryStatus?.ytDlp?.available ? (
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Active</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Pending</span>
-                  </span>
-                )}
-              </div>
+              <StatusBadge available={binaryStatus?.ytDlp?.available} />
             </div>
 
             {/* ffmpeg item */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-slate-900">FFmpeg (Stream Merger & MP3)</p>
+                <p className="font-semibold text-slate-900">FFmpeg (4K Stream Merger & MP3 Converter)</p>
                 <p className="text-slate-500 text-[11px] mt-0.5">
                   {binaryStatus?.ffmpeg?.available
                     ? `Ready (${binaryStatus.ffmpeg.version?.split(' ')[2] || 'Installed'})`
-                    : 'Setting up...'}
+                    : 'Not installed yet'}
                 </p>
               </div>
+              <StatusBadge available={binaryStatus?.ffmpeg?.available} />
+            </div>
+          </div>
+
+          {/* Speed & Concurrency */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700 uppercase tracking-wider text-[11px]">
+              Performance & Queue
+            </span>
+            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
               <div>
-                {binaryStatus?.ffmpeg?.available ? (
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Active</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Setting up</span>
-                  </span>
-                )}
+                <p className="font-semibold text-slate-900">Simultaneous Downloads</p>
+                <p className="text-[11px] text-slate-500">Max files downloading at the same time</p>
               </div>
+              <select
+                value={maxConcurrent}
+                onChange={(e) => setMaxConcurrent(Number(e.target.value))}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500"
+              >
+                <option value={1}>1 File (Max single-file speed)</option>
+                <option value={2}>2 Files (Balanced)</option>
+                <option value={3}>3 Files (Fast)</option>
+                <option value={5}>5 Files (Multi-task)</option>
+              </select>
             </div>
           </div>
 
           {/* Download Location Setting */}
           <div className="space-y-2 pt-2 border-t border-slate-100">
             <span className="font-semibold text-slate-700 uppercase tracking-wider text-[11px]">
-              Default Download Location
+              Default Download Folder
             </span>
             <div className="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
               <Folder className="w-4 h-4 text-indigo-500 shrink-0" />
@@ -132,7 +155,7 @@ export default function SettingsModal({
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start space-x-2.5 text-slate-500 text-[11px]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <p>
-              100% Client-Side. No telemetry, no third-party cloud servers, and no ads.
+              100% Local Download Manager. No ads, no speed caps, full hardware & bandwidth utilization.
             </p>
           </div>
         </div>
@@ -148,5 +171,22 @@ export default function SettingsModal({
         </div>
       </div>
     </div>
+  );
+}
+
+function StatusBadge({ available }) {
+  if (available) {
+    return (
+      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium shrink-0">
+        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+        <span>Active</span>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium shrink-0">
+      <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+      <span>Missing</span>
+    </span>
   );
 }

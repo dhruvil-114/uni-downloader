@@ -1,12 +1,12 @@
 @echo off
 setlocal
-title StreamVault Downloader
+title Uni Downloader
 cd /d "%~dp0"
 
 :: 1. Check if setup was executed
 if not exist "node_modules\react" (
     echo [ERROR] Dependencies not found!
-    echo Please run setup.bat first to initialize StreamVault.
+    echo Please run setup.bat first to initialize Uni Downloader.
     echo.
     pause
     exit /b 1
@@ -40,7 +40,7 @@ if exist "node_modules\electron\dist\electron.exe" (
 )
 
 :dev_mode
-echo Starting StreamVault in Developer Mode (Vite Dev Server + Hot Reload)...
+echo Starting Uni Downloader in Developer Mode (Vite Dev Server + Hot Reload)...
 call npm run electron:dev
 if errorlevel 1 (
     pause

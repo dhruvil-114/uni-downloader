@@ -33,6 +33,14 @@ export function getFfmpegPath() {
   return 'ffmpeg';
 }
 
+export function getAria2Path() {
+  const localExe = path.join(binDir, 'aria2c.exe');
+  if (fs.existsSync(localExe)) {
+    return localExe;
+  }
+  return 'aria2c';
+}
+
 function runCommandSafe(command, args) {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args, { windowsHide: true });
@@ -105,6 +113,27 @@ export async function checkBinariesStatus() {
     }
   }
 
+  let aria2Available = false;
+  let aria2Version = null;
+
+  // 3. Check aria2c
+  const localAria2 = path.join(binDir, 'aria2c.exe');
+  if (fs.existsSync(localAria2)) {
+    try {
+      const stdout = await runCommandSafe(localAria2, ['--version']);
+      aria2Available = true;
+      aria2Version = stdout.split('\n')[0];
+    } catch (e) {}
+  }
+
+  if (!aria2Available) {
+    try {
+      const stdout = await runCommandSafe('aria2c', ['--version']);
+      aria2Available = true;
+      aria2Version = stdout.split('\n')[0];
+    } catch (e) {}
+  }
+
   return {
     ytDlp: {
       available: ytdlpAvailable,
@@ -115,6 +144,11 @@ export async function checkBinariesStatus() {
       available: ffmpegAvailable,
       version: ffmpegVersion,
       path: ffmpegAvailable ? (fs.existsSync(localFfmpeg) ? localFfmpeg : 'ffmpeg') : null
+    },
+    aria2c: {
+      available: aria2Available,
+      version: aria2Version,
+      path: aria2Available ? (fs.existsSync(localAria2) ? localAria2 : 'aria2c') : null
     }
   };
 }
@@ -267,6 +301,43 @@ export async function downloadMissingBinaries(onProgress) {
     } catch (e) {}
 
     onProgress?.({ binary: 'ffmpeg', status: 'completed', percent: 100, message: 'FFmpeg ready!' });
+  }
+
+  // 3. Download aria2c if needed (for 16x direct files & torrents)
+  if (!status.aria2c.available) {
+    onProgress?.({ binary: 'aria2c', status: 'downloading', message: 'Downloading aria2c turbo engine...' });
+    const zipDest = path.join(dir, 'aria2-build.zip');
+    const aria2Url = 'https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip';
+
+    await downloadFileWithRedirects(aria2Url, zipDest, (p) => {
+      onProgress?.({ binary: 'aria2c', status: 'downloading', percent: p.percent, message: `Downloading aria2c... ${p.percent}%` });
+    });
+
+    onProgress?.({ binary: 'aria2c', status: 'extracting', percent: 100, message: 'Extracting aria2c binary...' });
+    const extractDir = path.join(dir, 'aria2-temp');
+    await extractZipSafe(zipDest, extractDir);
+
+    const findAndMoveAria2 = (currentDir) => {
+      if (!fs.existsSync(currentDir)) return;
+      const items = fs.readdirSync(currentDir);
+      for (const item of items) {
+        const full = path.join(currentDir, item);
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) {
+          findAndMoveAria2(full);
+        } else if (item.toLowerCase() === 'aria2c.exe') {
+          fs.copyFileSync(full, path.join(dir, 'aria2c.exe'));
+        }
+      }
+    };
+    findAndMoveAria2(extractDir);
+
+    try {
+      if (fs.existsSync(zipDest)) fs.unlinkSync(zipDest);
+      if (fs.existsSync(extractDir)) fs.rmSync(extractDir, { recursive: true, force: true });
+    } catch (e) {}
+
+    onProgress?.({ binary: 'aria2c', status: 'completed', percent: 100, message: 'aria2c turbo engine ready!' });
   }
 
   return await checkBinariesStatus();

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { checkBinariesStatus, downloadMissingBinaries, getBinariesDir } from './binaries.js';
 import { getVideoMetadata, getPlaylistMetadata, startDownload, cancelDownload } from './ytdlp.js';
+import { startAria2Download, stopAria2Download } from './aria2.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,18 +12,27 @@ const __dirname = path.dirname(__filename);
 let mainWindow = null;
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
-// Whitelist of allowed extensions for shell-open-file
+// Whitelist of safe non-executable extensions for shell-open-file
 const ALLOWED_MEDIA_EXTS = new Set([
-  '.mp4', '.m4a', '.mp3', '.webm', '.mkv',
-  '.srt', '.vtt', '.png', '.jpg', '.jpeg', '.webp'
+  '.mp4', '.m4a', '.mp3', '.webm', '.mkv', '.avi', '.mov', '.flac', '.wav',
+  '.srt', '.vtt', '.png', '.jpg', '.jpeg', '.webp',
+  '.pdf', '.txt', '.csv', '.json', '.zip', '.rar', '.7z'
+]);
+
+const DIRECT_FILE_EXTS = new Set([
+  '.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz',
+  '.exe', '.msi', '.dmg', '.pkg', '.deb', '.rpm', '.apk', '.appimage',
+  '.iso', '.img', '.bin',
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv',
+  '.mp3', '.flac', '.wav', '.mp4', '.mkv', '.avi'
 ]);
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 760,
-    minWidth: 700,
-    minHeight: 520,
+    width: 1200,
+    height: 780,
+    minWidth: 760,
+    minHeight: 540,
     frame: false, // Custom sleek titlebar
     backgroundColor: '#F8FAFC', // slate-50 light background
     show: false,
@@ -151,8 +161,71 @@ ipcMain.handle('yt-start-download', async (event, options) => {
   );
 });
 
+// IPC: Link classification
+ipcMain.handle('detect-link-type', (event, rawInput) => {
+  if (typeof rawInput !== 'string') return { kind: 'social' };
+  const trimmed = rawInput.trim();
+  const lower = trimmed.toLowerCase();
+
+  if (lower.startsWith('magnet:?') || lower.endsWith('.torrent')) {
+    return { kind: 'torrent', label: 'Torrent / Magnet' };
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const ext = path.extname(parsed.pathname).toLowerCase();
+    const host = parsed.hostname.toLowerCase();
+
+    // Known social platforms always go to yt-dlp unless explicitly overridden
+    const socialHosts = [
+      'youtube.com', 'youtu.be', 'instagram.com', 'tiktok.com',
+      'snapchat.com', 'twitter.com', 'x.com', 'dailymotion.com',
+      'facebook.com', 'fb.watch', 'reddit.com', 'pinterest.com',
+      'vimeo.com', 'twitch.tv', 'soundcloud.com'
+    ];
+    if (socialHosts.some((h) => host.includes(h))) {
+      return { kind: 'social', label: 'Social / Video' };
+    }
+
+    if (DIRECT_FILE_EXTS.has(ext) || parsed.protocol === 'ftp:') {
+      return { kind: 'direct', label: `Direct File (${ext || 'FTP'})`, filename: path.basename(parsed.pathname) };
+    }
+  } catch (e) {}
+
+  return { kind: 'social', label: 'Auto / Web Video' };
+});
+
+ipcMain.handle('dialog-select-torrent', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select .torrent File',
+    properties: ['openFile'],
+    filters: [{ name: 'Torrent Files', extensions: ['torrent'] }]
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    return result.filePaths[0];
+  }
+  return null;
+});
+
+ipcMain.handle('aria2-start-download', async (event, options) => {
+  return startAria2Download(
+    options,
+    (progress) => mainWindow?.webContents.send('download-progress', progress),
+    (complete) => mainWindow?.webContents.send('download-complete', complete),
+    (error) => mainWindow?.webContents.send('download-error', error)
+  );
+});
+
+ipcMain.handle('download-pause', async (event, downloadId) => {
+  const pausedYt = cancelDownload(downloadId, true);
+  const pausedAria = stopAria2Download(downloadId, true);
+  return pausedYt || pausedAria;
+});
+
 ipcMain.handle('yt-cancel-download', async (event, downloadId) => {
-  return cancelDownload(downloadId);
+  const cancelledYt = cancelDownload(downloadId, false);
+  const cancelledAria = stopAria2Download(downloadId, false);
+  return cancelledYt || cancelledAria;
 });
 
 // IPC: Files & Folders
@@ -171,7 +244,7 @@ ipcMain.handle('dialog-select-folder', async (event, defaultPath) => {
 
 ipcMain.handle('get-default-download-path', () => {
   const userDownloads = app.getPath('downloads');
-  const targetDir = path.join(userDownloads, 'YouTube Downloads');
+  const targetDir = path.join(userDownloads, 'Uni Downloads');
   if (!fs.existsSync(targetDir)) {
     try {
       fs.mkdirSync(targetDir, { recursive: true });

@@ -372,6 +372,13 @@ export function startDownload(options, onProgress, onComplete, onError) {
     '--newline',
     '--no-playlist',
     '--windows-filenames',
+    '--concurrent-fragments', '16',
+    '--http-chunk-size', '10M',
+    '--buffer-size', '128K',
+    '--throttled-rate', '100K',
+    '--retries', '10',
+    '--fragment-retries', '10',
+    '--socket-timeout', '15',
     '--ffmpeg-location', binDir,
     '-o', outTemplate
   ];
@@ -399,12 +406,12 @@ export function startDownload(options, onProgress, onComplete, onError) {
   args.push('--', cleanUrl);
 
   const proc = spawn(ytDlp, args, { windowsHide: true });
-  activeDownloads.set(downloadId, proc);
+  activeDownloads.set(downloadId, { proc, paused: false });
 
   let finalFilePath = null;
   let stdoutBuffer = '';
 
-  const progressRegex = /\[download\]\s+(\d+\.?\d*)%\s+of\s+~?\s*([\d\.]+[A-Za-z]+)\s+at\s+([\d\.]+[A-Za-z\/]+)\s+ETA\s+(\d+:\d+)/;
+  const progressRegex = /\[download\]\s+(\d+\.?\d*)%\s+of\s+~?\s*([\d\.]+[A-Za-z]+)\s+at\s+([\d\.]+[A-Za-z\/]+|Unknown)\s+ETA\s+([\d:]+|Unknown)/;
   const destinationRegex = /\[(?:download|Merger|ExtractAudio)\] Destination:\s+(.+)$/;
   const alreadyDownloadedRegex = /\[download\]\s+(.+)\s+has already been downloaded/;
 
@@ -472,7 +479,11 @@ export function startDownload(options, onProgress, onComplete, onError) {
   });
 
   proc.on('close', (code) => {
+    const entry = activeDownloads.get(downloadId);
+    const wasPaused = entry?.paused;
     activeDownloads.delete(downloadId);
+
+    if (wasPaused) return;
 
     if (code === 0) {
       onComplete({
@@ -489,32 +500,39 @@ export function startDownload(options, onProgress, onComplete, onError) {
   });
 
   proc.on('error', (err) => {
+    const entry = activeDownloads.get(downloadId);
+    const wasPaused = entry?.paused;
     activeDownloads.delete(downloadId);
-    onError({
-      downloadId,
-      error: err.message
-    });
+    if (!wasPaused) {
+      onError({
+        downloadId,
+        error: err.message
+      });
+    }
   });
 
   return downloadId;
 }
 
 /**
- * Cancel active download safely
+ * Pause or Cancel active download safely
  */
-export function cancelDownload(downloadId) {
-  const proc = activeDownloads.get(downloadId);
-  if (proc && proc.pid) {
+export function cancelDownload(downloadId, isPause = false) {
+  const entry = activeDownloads.get(downloadId);
+  if (entry && entry.proc && entry.proc.pid) {
+    entry.paused = isPause;
     if (process.platform === 'win32') {
-      spawn('taskkill', ['/pid', String(proc.pid), '/T', '/F'], { windowsHide: true });
+      spawn('taskkill', ['/pid', String(entry.proc.pid), '/T', '/F'], { windowsHide: true });
     } else {
       try {
-        process.kill(-proc.pid, 'SIGKILL');
+        process.kill(-entry.proc.pid, 'SIGKILL');
       } catch (e) {
-        proc.kill('SIGKILL');
+        entry.proc.kill('SIGKILL');
       }
     }
-    activeDownloads.delete(downloadId);
+    if (!isPause) {
+      activeDownloads.delete(downloadId);
+    }
     return true;
   }
   return false;
